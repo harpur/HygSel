@@ -1,0 +1,212 @@
+###
+# PC- select
+###
+
+#Method uses EIG PCs, then Fast-LMM (Begins here):
+#http://www.genetics.org/content/197/3/1045.full.pdf
+#FAST LMMC Select (http://www.nature.com/nmeth/journal/v9/n6/full/nmeth.2037.html)
+#unzip 
+#chmod u+x fastlmmc
+
+
+
+
+
+cd /media/data1/forty3/drone/FaSTLMM.207.Linux/Linux_MKL
+	#copied over the final .ped and .map files (unthinned)
+
+
+#This program works best with known chromosomal positions (not scaffolds)
+#So, I converted the scaffolds into chromosomal positions and re-made the map file
+	map=read.table(file="DroneSelection.map",header=F)
+	map$V1=map$V2
+	map$V2=gsub("[:].*","",map$V1)
+	map$V2=paste("Group",map$V2,sep="")
+	map$V3=map$V4;map$V4=NULL
+	write.table(map,file="convertsites",col.names=F,row.names=F,quote=F)
+	
+	perl scaffold_to_chr.pl
+	
+	R
+	map=read.table(file="DroneSelection.map",header=F)
+	chr=read.table(file="convertsites_onChr.txt",header=F)
+	map$V1=gsub("chr","",chr$V2)
+	map$V4=chr$V3
+	write.table(map,file="DroneSelection.map",col.names=F,row.names=F,quote=F)
+	
+
+	
+	
+#Best Results So far:
+	
+plink --file DroneSelection --maf 0.1 --recode --make-bed --noweb --mind 0.2 --out CleandDrone
+	
+./fastlmmc -autoselect ASoutCleanedCV -autoSelectSearchValues "64 128 256 512 1024 2048 10100" -randomSeed 62 -autoselectFolds 10 -bfile CleandDrone -bfilesim CleandDrone -mpheno 1 -pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt -REML -maxThreads 20 
+
+
+./fastlmmc -bfile CleandDrone  -bfilesim CleandDrone -mpheno 1 -pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt  -extractSim ASoutCleanedCV.snps.txt  -out CleanCV.insample.txt -REML -maxThreads 20  
+	
+	
+	
+	#Moved to /FinalRun
+	
+
+	
+	
+	
+plink --file DroneSelection  --recode  --noweb --out HighFSTRegions --extract /media/data1/forty3/drone/FST/SelvsCon/HighFSTRegions.snp 
+
+
+	
+plink --file HighFSTRegions  --recode  --make-bed --noweb --out HighFST --thin 0.001
+./fastlmmc -autoselect FSTCleaned -autoSelectSearchValues "64 128 256 512 1024 2048 10100" -randomSeed 82 -autoselectFolds 10 -bfile HighFST  -bfilesim HighFST  -mpheno 1 -pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt -REML -maxThreads 20 
+./fastlmmc -bfile HighFST -bfilesim HighFST -mpheno 1 -pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt  -extractSim FSTCleaned.snps.txt  -out HighFST.insample.txt -REML -maxThreads 20  
+		
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+#With Candidate SNPs
+	#added in the correct chromosomes with perl script
+cp DroneCandidate.* /media/data1/forty3/drone/FaSTLMM.207.Linux/Linux_MKL
+plink --file DroneCandidate --recode --noweb
+	
+./fastlmmc -autoselect ASoutCandidateCV -autoSelectSearchValues "64 128 256 512 1024 2048 10100" -randomSeed 34 -autoselectFolds 10 -file DroneCandidate -filesim DroneCandidate -mpheno 1 -pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt -REML -maxThreads 20 -covar /media/data1/forty3/drone/vcf_drone/HBPCACandid.txt
+
+
+./fastlmmc -file DroneCandidate  -filesim DroneCandidate -mpheno 1 -pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt  -extractSim ASoutCandidateCV.snps.txt  -out CandidateCV.insample.txt -maxThreads 20  -covar /media/data1/forty3/drone/vcf_drone/HBPCACandid.txt 
+
+	
+
+
+./fastlmmc -file DroneCandidate  -filesim DroneCandidate -mpheno 1 -pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt  -extractSim ASoutCandidateCV.snps.txt  -out CandidateCV.insample.txt -maxThreads 20  -covar /media/data1/forty3/drone/vcf_drone/HBPCACandid.txt -REML 
+
+	
+	
+	
+	
+	
+#Uncorrected with HighFST SNPs:
+
+	plink --file DroneSelection --noweb --allow-no-sex --out HLCandidate  --extract /media/data1/forty3/drone/vcf_drone/GenicHighestFSTSNPs.snp --keep /media/data1/forty3/drone/vcf_drone/controlBees.txt --recode
+	
+
+./fastlmmc -autoselect ASoutCleanedCV -autoSelectSearchValues "5 15 20 30 56 64 " -randomSeed 62 -autoselectFolds 10 -file HLCandidate -filesim HLCandidate -mpheno 1 -pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt -REML -maxThreads 20 
+
+
+./fastlmmc -file HLCandidate  -filesim HLCandidate -mpheno 1 -pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt  -extractSim ASoutCleanedCV.snps.txt  -out CleanCV.insample.txt -REML -maxThreads 20  
+
+
+
+	
+	
+	
+###################################################
+	
+	
+	
+#With CV
+	#one round with scaffolds (_unpositions) and one round with chromosomes
+	
+./fastlmmc -autoselect ASoutCV -autoSelectSearchValues "64 128 256 512 1024 2048 10100" -randomSeed 5 -autoselectFolds 20 -file DroneSelection -filesim DroneSelection -mpheno 1 -pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt -covar /media/data1/forty3/drone/vcf_drone/HBPCA.txt -REML -maxThreads 20 
+
+
+
+./fastlmmc -file DroneSelection  -filesim DroneSelection -mpheno 1 -pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt -covar /media/data1/forty3/drone/vcf_drone/HBPCA.txt -extractSim ASoutCV.snps.txt  -out CV.insample.txt -REML -maxThreads 20 
+
+	#weird results, low power. Re-running on thinned dataset
+	
+	
+	
+#With CV but on a thinned dataset:
+
+plink --file DroneSelection --maf 0.1 --recode --make-bed --noweb -
+
+./fastlmmc -autoselect ASoutCV -autoSelectSearchValues "64 128 256 512 1024 2048 10100" -randomSeed 5 -autoselectFolds 20 -bfile plink -bfilesim plink -mpheno 1 -pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt -covar /media/data1/forty3/drone/vcf_drone/HBPCA.txt -REML -maxThreads 20 -excludeByPosition 10000
+
+
+./fastlmmc -bfile plink  -bfilesim plink -mpheno 1 -pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt -covar /media/data1/forty3/drone/vcf_drone/HBPCA.txt -extractSim ASoutCV.snps.txt  -out CV.insample.txt -REML -maxThreads 20  -excludeByPosition 10000
+
+	
+	
+	
+plink --file DroneSelection --maf 0.05 --recode --make-bed --noweb --mind 0.2 --out CleandDrone
+	
+./fastlmmc -autoselect ASoutCleanedCV -autoSelectSearchValues "64 128 256 512 1024 2048 10100" -randomSeed 5 -autoselectFolds 20 -bfile CleandDrone -bfilesim CleandDrone -mpheno 1 -pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt -REML -maxThreads 20 -excludeByPosition 1
+
+./fastlmmc -bfile CleandDrone  -bfilesim CleandDrone -mpheno 1 -pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt  -extractSim ASoutCleanedCV.snps.txt  -out CleanCV.insample.txt -REML -maxThreads 20  -excludeByPosition 1
+
+
+
+
+	
+plink --file DroneSelection --maf 0.1 --recode --noweb --mind 0.1 --out CleandDrone
+
+
+
+
+
+
+#With CV, thinned Dataset
+
+./fastlmmc -autoselect ASout500CV -autoSelectSearchValues "30 64 128 256 512 1024 2048 10100" -randomSeed 5 -autoselectFolds 20 -file DroneSelectionTHIN500 -filesim DroneSelectionTHIN500 -mpheno 1 -pheno AllHBPheno.txt -covar HBPCA.txt -REML -maxThreads 20 
+	#359983 SNPs
+
+./fastlmmc -file DroneSelectionTHIN500  -filesim DroneSelectionTHIN500 -mpheno 1 -pheno AllHBPheno.txt -extractSim ASout500CV.snps.txt  -out CV500.insample.txt -REML -maxThreads 20 -covar HBPCA.txt
+	#good.
+
+	
+	
+	
+	
+
+#With CV, Dataset Thinned by site location
+./fastlmmc -autoselect ASoutThinCV -autoSelectSearchValues "30 64 128 256 512 1024 2048 10100" -randomSeed 5 -autoselectFolds 20 -file DroneSelectionEx1 -filesim DroneSelectionEx1 -mpheno 1 -pheno AllHBPheno.txt -covar HBPCA.txt -REML -maxThreads 20 -excludeByPosition 1000
+
+./fastlmmc -file DroneSelection1 -filesim DroneSelection1 -mpheno 1 -pheno AllHBPheno.txt -extractSim ASoutThinCV.snps.txt  -out CV1.insample.txt -REML -maxThreads 20 -covar HBPCA.txt –excludeByPosition 1000
+		#Making DroneSelection1.map 
+		#R
+		#map=read.table(file="DroneSelectionEx.map")
+		#map$V1=gsub(":.*","",assoc$V2)
+		#write.table(map, file="DroneSelectionEx1.map",col.names=F,row.names=F,quote=F)
+
+
+
+
+
+
+
+
+#W/O CV - IDK
+./fastlmmc -autoselect ASoutNoCV -autoSelectSearchValues "64 128 256 512 1024 2048 10100" -randomSeed 5 -autoselectFolds 20 -file DroneSelectionEx -filesim DroneSelectionEx -mpheno 1 -pheno AllHBPheno.txt -REML -maxThreads 10
+./fastlmmc -file DroneSelectionEx  -filesim DroneSelectionEx -mpheno 1 -pheno AllHBPheno.txt -extractSim ASoutNoCV.snps.txt  -out noCV.insample.txt -REML -maxThreads 20
+
+
+
+
+
+
+
+
+
+
+

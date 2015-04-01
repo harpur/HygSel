@@ -1,0 +1,62 @@
+##Make a thinned VCF File, SNPs separated by at least 1kb
+vcftools --vcf DroneSelectionFinal.recode.vcf --thin 10000 --plink --out DroneSelectionTHIN10K
+	#OOPS, get rid of 18.1 and 17.2000 + 
+	#test=read.table(file="DroneSelection.map",header=F)
+	#snps1=test$V2[grep("^18.1:*",test$V2)]
+	#snps2=test$V2[grep("^17.[2-9][0-9][0-9][0-9]:*",test$V2)]
+	#snps=c(as.character(snps1),as.character(snps2))
+	#write.table(snps,file="ExcludedSNPs",col.names=F,row.names=F,quote=F)
+plink --file DroneSelectionTHIN10K --exclude ExcludedSNPs --noweb --make-bed
+plink --bfile plink  --recode --out DroneSelectionExTHIN10K  --noweb
+
+
+
+
+##Make a thinned VCF File, Linked SNPs
+vcftools --vcf DroneSelectionFinal.recode.vcf --geno-r2 --ld-window-bp 1000 --min-r2 0.5
+	R
+	ld=read.table(file="out.geno.ld",header=T)
+	snplist=c()
+	chroms=unique(ld$CHR);chroms=chroms[-grep("^18.:*", chroms)]
+	for(i in chroms){
+		#i="1.1"
+		test=ld[which(ld$CHR==i),]
+		blah=aggregate(test$POS2, by=list(test$POS1),max)$x
+		blah=unique(blah);blah=paste(i, blah, sep=" ")
+		snplist=c(snplist,blah)
+		print(i)
+	}
+	write.table(snplist,file="LINKEDSNPs",col.names=F,quote=F,row.names=F)
+
+vcftools --vcf DroneSelectionFinal.recode.vcf --recode --positions LINKEDSNPs --out DroneSelectionFinalLinked
+vcftools --vcf DroneSelectionFinal.recode.vcf  --positions LINKEDSNPs --plink 
+
+
+
+
+###
+#Exclude the 17s
+
+	R
+	ld=read.table(file="DroneSelectionEx.map",header=F)
+	ld=ld[-grep("^17.:*", ld$V2),]
+	ld$V1=gsub(":.*","",ld$V2)
+	
+	ld$V3=gsub(".*:", "", ld$V2)
+	write.table(ld[,c(1,3)],file="Excluded17s",col.names=F,quote=F,row.names=F)
+
+		
+vcftools --vcf DroneSelectionFinal.recode.vcf  --positions Excluded17s --plink 
+
+
+
+
+
+
+
+
+
+
+
+
+
