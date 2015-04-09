@@ -6,6 +6,19 @@
 
 
 
+
+
+
+
+#Along with DronePLINKset.sh, this identifies associated SNPs with hygiene and selection candidates
+
+
+
+
+
+
+
+
 #Ran this to get out candidate high-FST SNPs in Control population.
 #plink --file DroneSelection --noweb --allow-no-sex --recode --out HLCandidateCAT  --extract GenicHighestFSTSNPs.snp --keep controlBees.txt
 

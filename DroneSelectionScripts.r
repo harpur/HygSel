@@ -1,5 +1,5 @@
 #######
-# Drone Associatino Workflow
+# Drone Association Workflow
 #######
 
 
@@ -126,15 +126,10 @@ plink --bfile ControlHighFST  --recode --out ControlHighFST --noweb
 plink --bfile ControlHighFST --set-test --set Candidates98_ALL.set --mpheno 1 --pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt --noweb --linear --mperm 1000 --out Candidates98_ALL01 --set-p 0.01 --set-max 5
 
 
-#Testing one scaffold only.
-#for fil in Candidates98_*;
-#do plink --bfile ControlHighFST --set-test --set $fil --mpheno 1 --pheno /media/data1/forty3/drone/vcf_drone/#DronePhenoHB.txt --noweb --linear --mperm 1000 --out $fil --set-p 0.01 --set-max 5; done
 
 
-#--assoc does not work with -set-test
-#plink --file DroneSelection --set-test --set highFST.set --mpheno 1 --pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt --noweb --allow-no-sex --assoc --mperm 1000 --out controlset --set-p 0.01 --set-max 10 --qt-means --keep controlBees.txt
-	#If I sub in "Candidates.set" it stops working.
-	#I can't use candidate and "keep" in the same run.
+
+
 
 plink --bfile ControlHighFST --set-test --set Candidates98_ALL.set --pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt --noweb --linear --mperm 10000 --out Candidates98_ALLPHENO011000015 --set-p 0.01 --set-max 15
 
