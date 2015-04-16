@@ -37,7 +37,7 @@ vcftools --maf 0.05 --vcf DroneSelectionFinal.recode.vcf --weir-fst-pop pop2.txt
 #Association Analyses
 	
 	
-	
+###	
 #Select and Control together
 	
 	#For only Hygiene:
@@ -55,9 +55,68 @@ vcftools --maf 0.05 --vcf DroneSelectionFinal.recode.vcf --weir-fst-pop pop2.txt
 	   plink --file DroneSelection --set-test --set Candidates98_ALL.set --mpheno $i --pheno /media/data1/forty3/drone/vcf_drone/HBexpression.txt --noweb --linear --mperm 10000 --out ALL_PHENO$i --set-p 0.001 --set-max 5
 	done
 	
+
+#For means:	
+plink --file DroneSelection --extract CandidateSNPs98.snps --mpheno 1 --pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt --noweb --assoc --qt-means --out AllBees98Candidates
+	
+
+
+
+
+
+
+	
+###	
+#Select and Control separately
+	
+	#For only control Hygiene:
+
+	plink --file DroneSelection --set-test --set Candidates98_ALL.set --mpheno 1 --pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt --noweb --linear --mperm 10000 --out ControlCandidates001 --keep controlBees.txt --set-p 0.001 --set-max 5
+		
+	#For only selected Hygiene:
+
+	plink --file DroneSelection --set-test --set Candidates98_ALL.set --mpheno 1 --pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt --noweb --linear --mperm 10000 --out SelectedCandidates001 --remove controlBees.txt --set-p 0.001 --set-max 5
+	
+
+		# AllBees98Candidates001 and  AllBees98Candidates are P<0.001 and P<0.01 for 5 maximum SNPs after 10000 permutations 
+		# Both files use all bees for the hygiene phenotype. 
+		
+		
+	#For control expression candidates:
+	
+	for i in {1..9}
+	do
+	   plink --file DroneSelection --set-test --set Candidates98_ALL.set --keep controlBees.txt --mpheno $i --pheno /media/data1/forty3/drone/vcf_drone/HBexpression.txt --noweb --linear --mperm 10000 --out CON_PHENO$i --set-p 0.001 --set-max 5
+	done
+	
+	#For only selected Hygiene:
+	for i in {1..9}
+	do
+	   plink --file DroneSelection --set-test --set Candidates98_ALL.set --remove controlBees.txt --mpheno $i --pheno /media/data1/forty3/drone/vcf_drone/HBexpression.txt --noweb --linear --mperm 10000 --out SEL_PHENO$i --set-p 0.001 --set-max 5
+	done
 	
 	
 	
+
+#For means:	
+plink --file DroneSelection --extract CandidateSNPs98.snps --mpheno 1 --pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt --noweb --assoc --qt-means --out AllBees98Candidates
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	
 	

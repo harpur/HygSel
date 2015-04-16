@@ -14,18 +14,12 @@
 
 ###	
 #1) Get out LINKED SNPs within Sets:	
-
-plink --file ControlHighFST  --ld-snp-list highFST.list  --noweb --allow-no-sex --out CONTROL
-
-plink --file SelHighFST  --ld-snp-list highFST.list  --noweb --allow-no-sex --out SELECT
-
-
-
-plink --file DroneSelection --indep-pairwise 50 5 0.5 --extract highFST.list --noweb --allow-no-sex  --keep controlBees.txt --out CONTROL
-plink --file DroneSelection --indep-pairwise 50 5 0.5 --extract highFST.list --noweb --allow-no-sex  --remove controlBees.txt --out SELECT
+	#plink --file ControlHighFST  --ld-snp-list highFST.list  --noweb --allow-no-sex --out CONTROL
+	#plink --file SelHighFST  --ld-snp-list highFST.list  --noweb --allow-no-sex --out SELECT
+	#plink --file DroneSelection --indep-pairwise 50 5 0.5 --extract highFST.list --noweb --allow-no-sex  --keep controlBees.txt --out CONTROL
+	#plink --file DroneSelection --indep-pairwise 50 5 0.5 --extract highFST.list --noweb --allow-no-sex  --remove controlBees.txt --out SELECT
 
 plink --file DroneSelection --indep-pairwise 50 5 0.5 --extract highFST.list --noweb --allow-no-sex --out ALL
-
 plink --file DroneSelection --extract ALL.prune.in --out CandidateSET --noweb --make-bed 
 plink --bfile CandidateSET  --recode --out  CandidateSET --noweb
 

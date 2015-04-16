@@ -11,7 +11,8 @@
 
 
 #Along with DronePLINKset.sh, this identifies associated SNPs with hygiene and selection candidates
-
+	#Uses CandidateSNPs.snp 
+	#And XXXXXXXXXXX the set of independant SNPs in that list
 
 
 
