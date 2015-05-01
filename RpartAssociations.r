@@ -115,13 +115,26 @@ cor.test(vec$SNPpheno, Predicted)
 	#
 	
 #x11();varImpPlot(RFfit,scale=FALSE)
+pdf(file="SNPRFImportance.pdf")
+plot(vec.CON$SNPpheno, Predicted.CON,
+	pch = 19,
+	col="black",
+	xlab = "Observed Hygienic %",
+	ylab = "Predicted Hygienic %"
+	)
+dev.off()
+
+
+
+
 
 ##
 #3b) accuracy of predictions on SELECTED only
+vec.CON=vec[vec$SNPfam=="CON",]
 vec.SEL=vec[vec$SNPfam=="SEL",]
-RFfit.SEL <- randomForest(SNPpheno ~ .,  data=vec.SEL, importance=TRUE, ntree=1000, mtry=456, proximity=T,localImp=T)
-Predicted.SEL=predict(RFfit.SEL, vec.SEL[-2739])
-cor.test(vec.SEL$SNPpheno, Predicted.SEL)
+RFfit.CON <- randomForest(SNPpheno ~ .,  data=vec.CON, importance=TRUE, ntree=1000, mtry=456, proximity=T,localImp=T)
+Predicted.CON=predict(RFfit.CON, vec.CON[-2739])
+cor.test(vec.CON$SNPpheno, Predicted.CON)
 
 #        Pearson's product-moment correlation
 #
@@ -136,13 +149,37 @@ cor.test(vec.SEL$SNPpheno, Predicted.SEL)
 #
 
 
+#Con predicting SEL
+RFfit.CON <- randomForest(SNPpheno ~ .,  data=vec.CON, importance=TRUE, ntree=1000, mtry=456, proximity=T,localImp=T)
+Predicted.CON=predict(RFfit.CON, vec.SEL[-2739])
+cor.test(vec.SEL$SNPpheno, Predicted.CON)
 
-	
 
-##
-#4) Importance plot
+#Sel predicting CON
 
-imps = data.frame(importance(RFfit, type=1, scale=FALSE))
+RFfit.SEL <- randomForest(SNPpheno ~ .,  data=vec.CON, importance=TRUE, ntree=1000, mtry=456, proximity=T,localImp=T)
+Predicted.SEL=predict(RFfit.SEL, vec.CON[-2739])
+cor.test(vec.CON$SNPpheno, Predicted.SEL)
+x11();varImpPlot(RFfit.SEL,scale=FALSE)
+
+
+#plotting:
+pdf(file="SelpredictingCon.pdf")
+plot(vec.CON$SNPpheno, Predicted.SEL,pch=19, 
+	ylab="Observed Control Population Hygienic Behaviour (%)",
+	xlab="Predicted Control Population Hygienic Behaviour (%)"
+)
+cor.test(vec.CON$SNPpheno, Predicted.SEL)
+dev.off()
+
+
+#importance plot
+imps=(RFfit$localImportance)
+imps=imps[,c(1:29)]
+test=apply(imps,1,mean)
+test=test[-2739]
+
+imps = data.frame(test)
 names(imps)="IncMSE"
 imps$SNP=row.names(imps)
 imps=imps[order(-imps$IncMSE),]
@@ -158,6 +195,29 @@ dotchart(imps$IncMSE[ord],
 	pch=19
 	)
 abline(v=1,lty=2)
+dev.off()
+
+	
+
+##
+#4) Importance plot
+
+imps = data.frame(importance(RFfit.SEL, type=1, scale=FALSE))
+names(imps)="IncMSE"
+imps$SNP=row.names(imps)
+imps=imps[order(-imps$IncMSE),]
+
+#plotting
+pdf(file="SNPRFImportance.pdf")
+ord = rev(order(imps$IncMSE, decreasing = TRUE)[1:30])
+main = row.names(imps)[ord]	
+main[main=="SNPfam"]="Control vs Selected"
+dotchart(imps$IncMSE[ord],
+	labels=main,
+	xlab = "Random Forest Importance",
+	pch=19
+	)
+abline(v=0.5,lty=2)
 dev.off()
 #I also plot these on my FST figure...
 candidates = row.names(imps)[ord][imps$IncMSE[ord]>1]	

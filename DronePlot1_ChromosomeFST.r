@@ -113,3 +113,69 @@ for(i in 1:8){
 
 dev.off()
 
+
+
+
+
+
+
+
+
+
+#CHR 5 only:
+
+pdf(file="CHR5.pdf")
+g5=genes[genes$chrom=="5",]
+for(i in 5){
+	#Main Plot
+	plot(as.numeric(unlist(Fst$Pos[Fst$Group.1==i])),as.numeric(unlist(Fst$x[Fst$Group.1==i])), 
+	type="l",
+	xaxt="n",
+	xlab=NA,
+	ylab=NA,
+	xlim=c(9000000,  13000000),
+	ylim=c(0,0.35)
+	)
+	xpos <- seq(0, max(as.numeric(unlist(Fst$Pos[Fst$Group.1==i]))), by=1000000)
+	axis(1, at=xpos,labels=xpos/1000)
+	axis(2, pos=0, at=c(0,0.17, 0.35), labels=c("0", "0.175", "0.35"))
+	mtext("Chromosome 5 (kb)",side = 1, line = 3,  cex = 1)
+	mtext("Fixation Index (Fst)",side = 2, line = 3,  cex = 1)
+	lines(y=rep(highFstWindow,length(as.numeric(unlist(Fst$Pos[Fst$Group.1==i])))),
+		x=as.numeric(unlist(Fst$Pos[Fst$Group.1==i])), 
+		col="red",
+		lty=2)
+	lines(y=c(0.03,0.03),x=c(9783962,10814860),lwd=3)
+	points(x=g5$st, y=rep(0.2,length(g5$st)),cex=0.1)
+	
+	#add in perm SNPs:
+	xpos=c(10867357)
+	ypos=rep(0.2,length(xpos));ypos=ypos+(1:length(xpos)/100)
+	points(xpos,ypos,cex=2,bg="coral3",col="black",pch=21)
+	
+	#add in perm SNPs (Selected):
+	xpos=c(10904460)
+	ypos=rep(0.2,length(xpos));ypos=ypos+(1:length(xpos)/100)
+	points(xpos,ypos,cex=2,bg="coral4",col="black",pch=24) 
+	
+	
+}
+dev.off()
+
+#All
+#582524 5.14:1610939 0.1822910     5 10867357
+#582580 5.14:1612227 0.3507480     5 10868645
+#582597 5.14:1614317 0.0589269     5 10870735
+#583827 5.14:1734865 0.5027480     5 10991283
+#584099 5.14:1759660 0.5333270     5 11016078
+
+
+
+#CON
+#5.14:1610939
+
+#SEL
+#5.14:1648042
+
+
+

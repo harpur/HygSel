@@ -665,14 +665,14 @@ for(i in 1:16){
 #pdf(file="FstChromosome1516.pdf")
 for(i in chroms){
 	#pdf(file=paste("SignPointPlotFST", i, ".pdf",sep=""))
-	plot(as.numeric(unlist(Fst$Pos[Fst$Group.1==i])),as.numeric(unlist(Fst$x[Fst$Group.1==i])), 
+	plot(as.numeric(unlist(Fst23$Pos[Fst23$Group.1==i])),as.numeric(unlist(Fst23$x[Fst23$Group.1==i])), 
 		type="l",
 		bty="n",
 		lwd=1.32,
 		xaxt="n",
 		xlab="Genomic Position (Kb)",
 		ylab="Fixation Index (Fst)",
-		ylim=c(0,0.35)
+		ylim=c(0,0.35),col="black"
 	)
 	xpos <- seq(0, max(as.numeric(unlist(Fst$Pos[Fst$Group.1==i]))), by=1000000)
 	axis(1, at=xpos,labels=xpos/1000)
@@ -680,7 +680,7 @@ for(i in chroms){
 	abline(h=c(median(unlist(Fst[1,2]))-1.5*IQR(unlist(Fst[1,2])),
 		median(unlist(Fst[1,2]))+1.5*IQR(unlist(Fst[1,2]))),
 		col="darkgrey",lty=2)
-	abline(h=highFstWindow,col="tomato",lty=2)
+	abline(h=highFstWindow23,col="tomato",lty=2)
 	#abline(v=c(5484901,	5491534),lty=3,col="blue")
 	
 	#Add in Control-associated
