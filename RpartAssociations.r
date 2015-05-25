@@ -155,9 +155,9 @@ Predicted.CON=predict(RFfit.CON, vec.SEL[-2739])
 cor.test(vec.SEL$SNPpheno, Predicted.CON)
 
 
-#Sel predicting CON
+#Sel predicting SEL
 
-RFfit.SEL <- randomForest(SNPpheno ~ .,  data=vec.CON, importance=TRUE, ntree=1000, mtry=456, proximity=T,localImp=T)
+RFfit.SEL <- randomForest(SNPpheno ~ .,  data=vec.SEL, importance=TRUE, ntree=1000, mtry=456, proximity=T,localImp=T)
 Predicted.SEL=predict(RFfit.SEL, vec.CON[-2739])
 cor.test(vec.CON$SNPpheno, Predicted.SEL)
 x11();varImpPlot(RFfit.SEL,scale=FALSE)
