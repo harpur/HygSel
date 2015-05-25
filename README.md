@@ -23,8 +23,9 @@
 4. Get out high FST windows with HighWindowsFST.r <RData> <cutoff>
 
 
-### After compiling high FST regions
-5. 
+
+## Associations
+1. 
 
 
 
