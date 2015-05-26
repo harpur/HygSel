@@ -17,11 +17,15 @@
 
 ##FST Analyses
 ###After Alignment, SNP calling, and trimming procedures (VCF Creation above)
-1. Fst between selected (n=2 pops) and unselected using DroneCalculateFSTfromVCF.sh (copy and paste)
-2. After removing non-calls manually, saved SelectedvsControlFST.RData for all FST 
-3. Run  MovingAveFSTfromPLINK.r to create moving averages of FST along chromosomes (converted with updated perl script within R) saves an .RData file for next steps
-4. Get out high FST windows with HighWindowsFST.r <RData> <cutoff>
+1. Fst between selected (n=2 pops or N=1) and unselected using DroneCalculateFSTfromVCF.sh (copy and paste)
+2. Run  MovingAveFSTfromPLINK.r <PLINK Fst> <WInsize> to create moving averages of FST along chromosomes (converted with updated perl script within R) saves an .RData file for next steps
+3. Get out high FST windows with HighWindowsFST.r <RData> <cutoff>
+4. If run 2 independent FST analyses, get overlapping windows.
 
+e.g.
+
+<pre><code>Rscript MovingAveFSTfromPLINK.r /media/data1/forty3/drone/vcf_drone/pop2_vs_sel.weir.fst 10000</code></pre>
+<pre><code>Rscript HighWindowsFST.r /media/data1/forty3/drone/vcf_drone/pop2_vs_sel.RDATA 0.95</code></pre>
 
 
 ## Associations

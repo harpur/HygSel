@@ -38,6 +38,8 @@ load(file=RData)
 highFstWindow=quantile(unlist(Fst$x),as.numeric(cutoff))
 HighFstPositions=as.matrix(apply(Fst, 1, function(x) unlist(as.numeric(unlist(x[3]))[which((as.numeric(unlist(x[2]))>=highFstWindow))])))
 #SNPs within high FST areas
+	#NOTE: Row names in HighFstPositions are INCORRECT. shoudl be 1,2,3,etc.
+row.names(HighFstPositions)=c(1:16)
 matr=c()
 for(i in 1:16){
 	#i=3
@@ -79,7 +81,6 @@ fst.raw$test = paste(fst.raw$V2, fst.raw$V3, sep=":")
 
 test=merge(HighSNPs, fst.raw, by="test")
 test$CHROM.y=gsub("Group","",test$CHROM.y)
-write.list(test[c(8,9)],file="/media/data1/afz/assoc/ALLHighFSTWindowSNPs")
 HighSNPs = test[c(2,3,4,11)] ;  names(HighSNPs)=c("CHROM","POS","FST","SNP")
 
 
