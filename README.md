@@ -24,8 +24,10 @@
 
 e.g.
 
-<pre><code>Rscript MovingAveFSTfromPLINK.r /media/data1/forty3/drone/vcf_drone/pop2_vs_sel.weir.fst 10000</code></pre>
-<pre><code>Rscript HighWindowsFST.r /media/data1/forty3/drone/vcf_drone/pop2_vs_sel.RDATA 0.95</code></pre>
+<pre><code>Rscript MovingAveFSTfromPLINK.r 
+	/media/data1/forty3/drone/vcf_drone/pop2_vs_sel.weir.fst 10000</code></pre>
+<pre><code>Rscript HighWindowsFST.r 
+	/media/data1/forty3/drone/vcf_drone/pop2_vs_sel.RDATA 0.95</code></pre>
 
 
 
@@ -49,46 +51,55 @@ do plink --noweb --file AllSamplere  --recode --out DroneSamps_$K --chr $K ; don
 </code></pre> 
 
 
-#		5. Run Shapeit
-#		for K in  16 2 3 4 5 6 7 8 9 10 11 12 13 14 15 1; \
-#		do ./shapeit -P /media/data1/forty3/drone/vcf_drone/DroneSamps_$K -T 2 -O/media/data1/forty3/drone/vcf_drone/DroneSamps_$K.phased ; done
-#
-#
-#
-#
-#						haps=read.table(file="DroneSamps_6.phased.haps ")
-#
-#
-#						6. Add in Allelic information into 
-#						for K in  1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 ; \
-#						do python  /home/sani/task1/Phased_Script_PP.py DroneSamps_16.phased.haps ; done
-#
-#
-#						plink --noweb --file DroneSamps_16.phased.haps --recode  --out test --chr $K
-#
-#
-#						R
-#						source("/media/data1/forty3/brock/scripts/GOgetter.r")
-#						source("/media/data1/forty3/brock/scripts/VarFunct.r")
-#						source("/media/data1/forty3/brock/scripts/movingavg.r")
-#
-#
-#						samp=read.table(file="DroneSamps_6.phased.sample",header=T)
-#						samp=samp[-1,];samp=samp[-3]
-#						#samp=rbind(samp,samp);samp=samp[order(samp[,1]),]
-#						haps=read.table(file="DroneSamps_6.phased.haps",header=F)
-#						haps$zer=rep("0", nrow(haps))
-#						maps=haps[c(1,2,ncol(haps), 3)]
-#						write.list(maps, file="DroneSampsPH_6.map")
-#						haps=haps[-c(1,2,ncol(haps), 3,4,5)]
-#						haps1=as.matrix(haps)
-#						haps1[haps1=="0"]=23;haps1[haps1=="1"]=2;haps1[haps1=="23"]=1;
-#						
-#			
-#						thaps=cbind(maps, haps1)
-#						write.list(thaps, file="DroneSampsPH_6.tped")
-#						write.list(samp, file="DroneSampsPH_6.tfam")
-#
+
+
+
+
+
+
+
+<!---
+
+		5. Run Shapeit
+		for K in  16 2 3 4 5 6 7 8 9 10 11 12 13 14 15 1; \
+		do ./shapeit -P /media/data1/forty3/drone/vcf_drone/DroneSamps_$K -T 2 -O/media/data1/forty3/drone/vcf_drone/DroneSamps_$K.phased ; done
+
+
+
+
+						haps=read.table(file="DroneSamps_6.phased.haps ")
+
+
+						6. Add in Allelic information into 
+						for K in  1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 ; \
+						do python  /home/sani/task1/Phased_Script_PP.py DroneSamps_16.phased.haps ; done
+
+
+						plink --noweb --file DroneSamps_16.phased.haps --recode  --out test --chr $K
+
+
+						R
+						source("/media/data1/forty3/brock/scripts/GOgetter.r")
+						source("/media/data1/forty3/brock/scripts/VarFunct.r")
+						source("/media/data1/forty3/brock/scripts/movingavg.r")
+
+
+						samp=read.table(file="DroneSamps_6.phased.sample",header=T)
+						samp=samp[-1,];samp=samp[-3]
+						samp=rbind(samp,samp);samp=samp[order(samp[,1]),]
+						haps=read.table(file="DroneSamps_6.phased.haps",header=F)
+						haps$zer=rep("0", nrow(haps))
+						maps=haps[c(1,2,ncol(haps), 3)]
+						write.list(maps, file="DroneSampsPH_6.map")
+						haps=haps[-c(1,2,ncol(haps), 3,4,5)]
+						haps1=as.matrix(haps)
+						haps1[haps1=="0"]=23;haps1[haps1=="1"]=2;haps1[haps1=="23"]=1;
+						
+			
+						thaps=cbind(maps, haps1)
+						write.list(thaps, file="DroneSampsPH_6.tped")
+						write.list(samp, file="DroneSampsPH_6.tfam")
+
 
 
 
@@ -154,3 +165,4 @@ geno=read.table(file="CHR16.ped",header=F)
 
 
 
+-->
