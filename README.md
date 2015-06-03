@@ -32,7 +32,7 @@ e.g.
 
 
 
-##Haplotype Associations
+##File Creation
 1. Create PED and MAP files
 <pre><code>cd /media/data1/forty3/drone/vcf_drone</code></pre>
 <pre><code>vcftools --vcf DroneSelectionFinal.recode.vcf --plink --out AllSample</code></pre>
@@ -53,13 +53,19 @@ e.g.
 </code></pre> 
 
 
-4a. output LD in  populations 
+4a. output LD in  populations (Haven't done here)
 <pre><code>
-plink --noweb --file AllSamplereINDEP --ld-window-kb 1000  --remove controlBees.txt --out DroneSelLD
+plink --noweb --file AllSamplereINDEP 
+	--ld-window-kb 1000  
+	--remove controlBees.txt 
+	--out DroneSelLD
 </code></pre> 
 
 <pre><code>
-plink --noweb --file AllSamplereINDEP --ld-window-kb 1000  --keep controlBees.txt  --out DroneCONLD
+plink --noweb --file AllSamplereINDEP 
+	--ld-window-kb 1000  
+	--keep controlBees.txt  
+	--out DroneCONLD
 </code></pre> 
 
 
@@ -71,26 +77,77 @@ do plink --noweb --file AllSamplereINDEP  --recode --out DroneSamps_$K --chr $K 
 </code></pre> 
 
 
-
+##If Phased Data wanted:
 6. Run Shapeit
+<pre><code>
 for K in  16 2 3 4 5 6 7 8 9 10 11 12 13 14 15 1; \
 do ./shapeit -P /media/data1/forty3/drone/vcf_drone/DroneSamps_$K -T 2 -O/media/data1/forty3/drone/vcf_drone/DroneSamps_$K.phased ; done
-
+</code></pre> 
 
 7. Add in Allelic information into 
+<pre><code>
 for K in  1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16; \
 do python  /media/data1/forty3/drone/git/Phased_Script_PP.py DroneSamps_$K.phased.haps ; done
-
+</code></pre> 
 
 8. Write out phased, tped files for association
+<pre><code>
 for K in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16; \
 	do Rscript HapstoTPED.r /media/data1/forty3/drone/vcf_drone/DroneSamps_$K.phased.haps.out; done
+</code></pre> 
+
+8a. Frequency removal
+for K in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16; \
+	do plink --noweb --tfile DroneSamps_$K.phased.sample --maf 0.05  --recode --out DroneSamps_$K.phasedMAF ; done
 
 
 
+
+
+	
+##If UnPhased Data wanted:	
+6. Frequency removal
+for K in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16; \
+	do plink --noweb --file DroneSamps_$K --maf 0.05  --recode --out DroneSamps_$K.UNphasedMAF ; done
+
+
+
+
+
+
+
+
+##Association Analysis
+1.  Cochran-Mantel-Haenszel (CMH) tests with unphased data
+<pre><code>
+plink --noweb --file  DroneSamps_6.UNphasedMAF --pheno /media/data1/forty3/drone/vcf_drone/CMHpheno.txt --mh2 --within SELCONcluster.txt --out CLUSTEREDUNPHMAF2_6 
+</code></pre> 
+
+
+2. Haplotype Association
+for K in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16; \
+	do plink --noweb --file DroneSamps_$K.phasedMAF --pheno /media/data1/forty3/drone/vcf_drone/CMHpheno.txt --mh --within SELCONcluster.txt --out CLUSTEREDMAF_$K ; done
+	
+
+	
+
+10. See Analysis.R
+
+
+
+
+
+<!---
+##########
 9. Write out phased, tped files for association
 for K in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16; \
-	do plink --noweb --tfile DroneSamps_$K.phased.sample --pheno /media/data1/forty3/drone/vcf_drone/CMHpheno.txt --mh --within SELCONcluster.txt --out CLUSTERED_$K ; done
+	do plink --noweb --file DroneSamps_$K --pheno /media/data1/forty3/drone/vcf_drone/CMHpheno.txt --mh --within SELCONcluster.txt --out CLUSTEREDnoShape_$K ; done
+
+
+
+
+
+
 
 
 	
@@ -185,7 +242,6 @@ for K in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16; \
 
 
 
-<!---
 
 		5. Run Shapeit
 		for K in  16 2 3 4 5 6 7 8 9 10 11 12 13 14 15 1; \
