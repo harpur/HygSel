@@ -123,14 +123,38 @@ for K in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16; \
 plink --noweb --file  DroneSamps_6.UNphasedMAF --pheno /media/data1/forty3/drone/vcf_drone/CMHpheno.txt --mh2 --within SELCONcluster.txt --out CLUSTEREDUNPHMAF2_6 
 </code></pre> 
 
-
-2. Haplotype Association
+2. Haplotype Association with disease staus
+<pre><code>
+for K in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16; 
+	do plink --noweb 
+		--file  DroneSamps_$K.UNphasedMAF 
+		--pheno /media/data1/forty3/drone/vcf_drone/CMHpheno.txt 
+		--hap-window 3  
+		--hap-assoc 
+		--out Dhap$K ; done
+</code></pre> 
+	
+3. Haplotype Association with quantitiative and unphased
 for K in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16; \
-	do plink --noweb --file DroneSamps_$K.phasedMAF --pheno /media/data1/forty3/drone/vcf_drone/CMHpheno.txt --mh --within SELCONcluster.txt --out CLUSTEREDMAF_$K ; done
+	do plink --noweb --file DroneSamps_$K.phasedMAF --pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt --hap-window 3 --hap-assoc --out hap_$K ; done
 	
 
 	
+	
+	
+4. Quantitative permutation with phased
+for K in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16; \
+	do plink --noweb --file DroneSamps_$K.phasedMAF --pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt --assoc --perm --out PERMhap_$K ; done
+		
 
+
+
+<!---
+16.2:431139 comes up every time,....
+plink --noweb --file DroneSamps_16.phasedMAF --pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt --proxy-assoc 16.2:431139 
+http://pngu.mgh.harvard.edu/~purcell/plink/proxy.shtml
+-->
+	
 10. See Analysis.R
 
 
