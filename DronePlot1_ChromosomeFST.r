@@ -59,7 +59,7 @@ par(mfrow = c(8, 1),
 	oma = c(1, 1, 1, 1)
 	)
 
-for(i in 1:8){
+for(i in 1:6){
 	#Main Plot
 	plot(as.numeric(unlist(Fst$Pos[Fst$Group.1==i])),as.numeric(unlist(Fst$x[Fst$Group.1==i])), 
 	type="l",
@@ -78,34 +78,34 @@ for(i in 1:8){
 		col="red",
 		lty=2)
 	
-	#Add in RFSNPs
-	xpos=RFset$V4[RFset$V1==i]
-	ypos=rep(0.2,length(xpos));ypos=ypos+(1:length(xpos)/100)
-	points(xpos,ypos,cex=2,bg="coral3",col="black",pch=21) #control 
-	
-	##Add Points 
-	#xpos=CONpos$V4[CONpos$V1==i]
-	#ypos=rep(0.2,length(xpos));ypos=ypos+(1:length(xpos)/100)
-	#points(xpos,ypos,cex=2,bg="coral3",col="black",pch=21) #control 
-	#
-	##Add in Selection-associated
-	#xpos=SELpos$V4[SELpos$V1==i]
-	#ypos=rep(0.25,length(xpos));ypos=ypos+(1:length(xpos)/100)
-	#points(xpos,ypos,cex=2,bg="coral4",col="black",pch=24) #selected
-	#
-	
-	
-	#Add in QTLs:
-	if(i==5){
-		lines(y=c(0.03,0.03),x=c(9783962,10814860),lwd=3)
-	}else{
-	if(i==2){
-		lines(y=c(0.03,0.03),x=c(14249515,15407932),lwd=3)
-	}else{
-	if(i==16){
-		lines(y=c(0.03,0.03),x=c(2058269,3127046),lwd=3)
-	}else{		
-		
+#	#Add in RFSNPs
+#	xpos=RFset$V4[RFset$V1==i]
+#	ypos=rep(0.2,length(xpos));ypos=ypos+(1:length(xpos)/100)
+#	points(xpos,ypos,cex=2,bg="coral3",col="black",pch=21) #control 
+#	
+#	##Add Points 
+#	#xpos=CONpos$V4[CONpos$V1==i]
+#	#ypos=rep(0.2,length(xpos));ypos=ypos+(1:length(xpos)/100)
+#	#points(xpos,ypos,cex=2,bg="coral3",col="black",pch=21) #control 
+#	#
+#	##Add in Selection-associated
+#	#xpos=SELpos$V4[SELpos$V1==i]
+#	#ypos=rep(0.25,length(xpos));ypos=ypos+(1:length(xpos)/100)
+#	#points(xpos,ypos,cex=2,bg="coral4",col="black",pch=24) #selected
+#	#
+#	
+#	
+#	#Add in QTLs:
+#	if(i==5){
+#		lines(y=c(0.03,0.03),x=c(9783962,10814860),lwd=3)
+#	}else{
+#	if(i==2){
+#		lines(y=c(0.03,0.03),x=c(14249515,15407932),lwd=3)
+#	}else{
+#	if(i==16){
+#		lines(y=c(0.03,0.03),x=c(2058269,3127046),lwd=3)
+#	}else{		
+#		
 			}
 		}
 	}

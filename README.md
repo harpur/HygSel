@@ -52,7 +52,7 @@ e.g.
 	--out AllSamplereINDEP
 </code></pre> 
 
-
+<!---
 4a. output LD in  populations (Haven't done here)
 <pre><code>
 plink --noweb --file AllSamplereINDEP 
@@ -67,7 +67,7 @@ plink --noweb --file AllSamplereINDEP
 	--keep controlBees.txt  
 	--out DroneCONLD
 </code></pre> 
-
+--->
 
 
 5. Output 1 file per Chromosome
@@ -141,11 +141,21 @@ for K in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16; \
 
 	
 	
-	
 4. Quantitative permutation with phased
 for K in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16; \
 	do plink --noweb --file DroneSamps_$K.phasedMAF --pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt --assoc --perm --out PERMhap_$K ; done
-		
+
+	
+4. Quantitative permutation with unphased
+for K in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
+	do (plink --noweb --file DroneSamps_$K.UNphasedMAF --pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt --assoc --perm --out PERMUNhap_$K ) & 
+	done
+	
+	
+
+
+5. Rpart across all
+I ran testSFS.r on each chromosome	and outputs to RPARTAssocSNPs
 
 
 
@@ -155,7 +165,25 @@ plink --noweb --file DroneSamps_16.phasedMAF --pheno /media/data1/forty3/drone/v
 http://pngu.mgh.harvard.edu/~purcell/plink/proxy.shtml
 -->
 	
-10. See Analysis.R
+10. See Analysis.R and Rcircos_Drone.r
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
