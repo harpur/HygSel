@@ -75,23 +75,49 @@ plink --file AMCHYGHIGH --noweb --make-bed --out AMCHYGHIGH
 
 
 ##DEGs and QTLs
-There are lists of [DEGs](http://www.biomedcentral.com/1471-2164/16/500), [DEPs](http://www.biomedcentral.com/1471-2164/16/63) and QTL papers ([1](http://onlinelibrary.wiley.com/doi/10.1111/j.1365-294X.2010.04569.x/full) and [2](http://link.springer.com/article/10.1007/s00114-002-0371-6#page-1)) available for hygienic behaviour. I pulled these data in to see if Iv'e got evidence of significant FST SNPs within them. I would expect some within QTLs, but not necessarily any in DEGs. 
+There are lists of [DEGs](http://www.biomedcentral.com/1471-2164/16/500), [DEPs](http://www.biomedcentral.com/1471-2164/16/63), Some [GWAS](http://journals1.scholarsportal.info/pdf/1755098x/v12i0002/323_doa4sabihbmc.xml) and QTL papers ([1](http://onlinelibrary.wiley.com/doi/10.1111/j.1365-294X.2010.04569.x/full) and [2](http://link.springer.com/article/10.1007/s00114-002-0371-6#page-1)) available for hygienic behaviour. I pulled these data in to see if I've got evidence of significant FST SNPs within them. I would expect some within QTLs, but not necessarily any in DEGs. 
 
-#### QTLs
-I used Oxley's QTLs and mapped their location in AMEL4.5 by BLAST'ing the location of the nearest SNP within said QTL's peak LOD score. 
+#### QTLs and GWAS
+I used Oxley's QTLs and mapped their location in AMEL4.5 by BLAST'ing the location of the nearest SNP within said QTL's peak LOD score. These are the best matches I could find using Solignac's marker set (scaffold:pos format).
 
 |	Amel4	|	Start	|	End	|
 |	-------------	|	:-------------:	|	-------------:	|
 |	hyg1	|	2.19:1245006	|	2.19:86589	|
-|	hyg1	|	?	|	?	|
 |	hyg2	|	5.14:527544	|	5.14:1558442	|
 |	hyg3	|	16.2:42885	|	16.4:920721	|
 
 
+For the "GWAS" I pulled Spotter's putative, unpublished QTLs from table 1:
 
+|	LG	|	Start	|	End	|
+|	---------	|	:---------:	|	---------	|
+|	LG1	|	3039231	|	8453574	|
+|	LG1	|	9418717	|	16819942	|
+|	LG2	|	1	|	12503099	|
+|	LG6	|	11206828	|	17739083	|
+|	LG7	|	9515998	|	12848973	|
+|	LG12	|	1	|	4003353	|
+|	LG13	|	5247545	|	10266737	|
+|	LG15	|	1	|	6643609	|
+|	LG16	|	3196393	|	6242592	|
 
+	
 
+#### DEGs and DEPs
+LF kindly provided significant DEPs. I pulled Boutin's Tables 4 and 5. 
+With these lists I looked for genes with significantly high FST SNPs (HYGFSTAnalyses.r and boutinDEGs.r). I permuted SNPs across the genoem for signiciance. 
 
+<!---
+Spotter et al. 2012	LG1:3039231-8453574	1		
+Spotter et al. 2012	LG1:9418717-16819942	1		GMCOX12, LOC413907, LOC552229, LOC725238
+Spotter et al. 2012	LG2:1-12503099	2		Pka-C1, LOC410087
+Spotter et al. 2012	LG6:11206828-17739083	6		LOC726672
+Spotter et al. 2012	LG7:9515998-12848973	7		
+Spotter et al. 2012	LG12:1-4003353	12		LOC410149, LOC100576840
+Spotter et al. 2012	LG13:5247545-10266737	13		LOC724644, CYP6AS11, CYP6AS8, CYP6AS1
+Spotter et al. 2012	LG15:1-6643609	15		LOC409740, NimC2
+Spotter et al. 2012	LG16:3196393-6242592	16		Cyp4g11, LOC726418
+-->
 
 
 
