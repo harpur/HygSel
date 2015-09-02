@@ -9,8 +9,9 @@
 
 
 ##VCF Creation:
-- VCFCreation_DroneSelection.txt
-- DroneVCFcreation.txt
+* VCFCreation_DroneSelection.txt
+
+* DroneVCFcreation.txt
 
 
 
@@ -66,9 +67,32 @@ plink --file AMCHYGHIGH --noweb --make-bed --out AMCHYGHIGH
 /home/brock/admixture/admixture  --cv=10 AMCHYGHIGH.bed 3 -j2 | tee log3.out
 </code></pre>
 
+* I used this to look at differences in introgression between selected and control lines at significant SNPs
 <!---
 #saved in HygieneHighFSTADMIXTURE.xlsx
 -->
+
+
+
+##DEGs and QTLs
+There are lists of [DEGs](http://www.biomedcentral.com/1471-2164/16/500), [DEPs](http://www.biomedcentral.com/1471-2164/16/63) and QTL papers ([1](http://onlinelibrary.wiley.com/doi/10.1111/j.1365-294X.2010.04569.x/full) and [2](http://link.springer.com/article/10.1007/s00114-002-0371-6#page-1)) available for hygienic behaviour. I pulled these data in to see if Iv'e got evidence of significant FST SNPs within them. I would expect some within QTLs, but not necessarily any in DEGs. 
+
+#### QTLs
+I used Oxley's QTLs and mapped their location in AMEL4.5 by BLAST'ing the location of the nearest SNP within said QTL's peak LOD score. 
+
+|	Amel4	|	Start	|	End	|
+|	-------------	|	:-------------:	|	-------------:	|
+|	hyg1	|	2.19:1245006	|	2.19:86589	|
+|	hyg1	|	?	|	?	|
+|	hyg2	|	5.14:527544	|	5.14:1558442	|
+|	hyg3	|	16.2:42885	|	16.4:920721	|
+
+
+
+
+
+
+
 
 
 ###Plotting Data
