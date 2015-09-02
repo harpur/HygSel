@@ -41,69 +41,34 @@ save.image(file="/media/data1/forty3/drone/FST/SelvsCon/SelectedvsControlFSTPval
 I used the final VCF file, paired with SNPs called from Harpur et al. 2014 to run ADMIXTURE. 
 
 
-1. Get out common SNPs between AMC and AHB in a merged VCF file. For this, I copied AMC.ped and AMC.map from my AFZ project. This contains SNPS for AMC with MAF 0.05.
+1. Get out common SNPs between AMC and AHB in a merged VCF file, create a .ped file. For this, I copied AMC.ped and AMC.map from my AFZ project. This contains SNPS for AMC with MAF 0.05. 
 
+WARNING: H-scroll and block of code...sorry :)
 <pre><code>
 vcftools --vcf /media/data1/afz/VCF/AllAMCSNPs.recode.vcf --max-alleles 2 --plink  --out AMC
-
 vcftools --vcf /media/data1/forty3/drone/vcf_drone/DroneSelectionFinal.recode.vcf --max-alleles 2 --plink  --out HYG
-
 Rscript /media/data1/afz/git/intersectingMap.r AMC.map HYG.map 
-
 vcftools --vcf /media/data1/forty3/drone/vcf_drone/DroneSelectionFinal.recode.vcf --positions Shared.map --recode --out HYG
-
 vcftools --vcf /media/data1/afz/VCF/AllAMCSNPs.recode.vcf --positions Shared.map --recode --out AMC
-
-gatk -T CombineVariants -R /home/amel45/AM45/am45new.fasta  --variant HYG.recode.vcf 
-	/ --variant AMC.recode.vcf 
-	/ -o HYGmergedAMC.vcf 
-	/ -genotypeMergeOptions REQUIRE_UNIQUE
-
+gatk -T CombineVariants -R /home/amel45/AM45/am45new.fasta  --variant HYG.recode.vcf --variant AMC.recode.vcf -o HYGmergedAMC.vcf -genotypeMergeOptions REQUIRE_UNIQUE
 vcftools --vcf HYGmergedAMC.vcf --max-alleles 2 --plink  --out AMCHYG
-
-plink --noweb --file AMCHYG --genome
+vcftools --vcf HYGmergedAMC.vcf --recode --positions HIGHFST.map --plink  --out AMCHYGHIGH
 </code></pre>
 
 
+2. Use the .ped files to create .bim, .fam,  and .bed for ADMIXTURE. I did this for all significant FST SNPs and for a random selection of SNPs. Then, run ADMIXTURE for K=3.
 
-
-<!---
-#AMCHYG contains the genetic distance of ALL SNPs.
-#I'll do the same thing with high FST SNPs
-	#HIGHFST.map
-
-vcftools --vcf HYGmergedAMC.vcf --recode --positions HIGHFST.map --plink  --out AMCHYGHIGH
-plink --noweb --file AMCHYGHIGH --genome --out AMCHYGHIGH
-
-
-
-###
-# Admixture
-
-#NOTE: need .bim, .fam and .bed
+<pre><code>
 plink --file AMCHYGHIGH --noweb --make-bed --out AMCHYGHIGH
 /home/brock/admixture/admixture  --cv=10 AMCHYGHIGH.bed 3 -j2 | tee log3.out
-	#SEL has more C....
 
-#Check against random SNPs
-plink --file AMCHYGHIGH --noweb --make-bed --thin 0.1 --out AMCHYGHIGHRAND
-/home/brock/admixture/admixture  --cv=10 AMCHYGHIGHRAND.bed 3 -j2 | tee log3RAND.out
+plink --file AMCHYGHIGH --noweb --make-bed --out AMCHYGHIGH
+/home/brock/admixture/admixture  --cv=10 AMCHYGHIGH.bed 3 -j2 | tee log3.out
+</code></pre>
 
+<!---
 #saved in HygieneHighFSTADMIXTURE.xlsx
-
-
-
 -->
-
-
-
-
-
-
-
-
-
-
 
 
 ###Plotting Data
