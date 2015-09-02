@@ -107,6 +107,12 @@ LF kindly provided significant DEPs. I pulled Boutin's Tables 4 and 5.
 With these lists I looked for genes with significant FST SNPs (HYGFSTAnalyses.r and boutinDEGs.r). I permuted SNPs across the genome for signiciance. 
 
 
+
+###GO Analysis
+I've focussed solely on significant FST genes for the time. I used GOstats (BostatsBEE.r) with a gene universe composed of fly orthologs to honey bee genes. For the first test, I used any-old gene with a significant SNP. For the second analysis, I used only genes with NSYN SNPs that had significantly more significant SNPs (that's fun to say) than expected by chance. My permutation procedure can be seen in HYGFSTAnalyses.r (~line 182). 
+
+
+
 ###Plotting Data
 All FST plot scripts can be found as .r files
 
