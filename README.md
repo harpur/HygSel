@@ -45,12 +45,22 @@ I used the final VCF file, paired with SNPs called from Harpur et al. 2014 to ru
 
 <pre><code>
 vcftools --vcf /media/data1/afz/VCF/AllAMCSNPs.recode.vcf --max-alleles 2 --plink  --out AMC
+
 vcftools --vcf /media/data1/forty3/drone/vcf_drone/DroneSelectionFinal.recode.vcf --max-alleles 2 --plink  --out HYG
+
 Rscript /media/data1/afz/git/intersectingMap.r AMC.map HYG.map 
+
 vcftools --vcf /media/data1/forty3/drone/vcf_drone/DroneSelectionFinal.recode.vcf --positions Shared.map --recode --out HYG
+
 vcftools --vcf /media/data1/afz/VCF/AllAMCSNPs.recode.vcf --positions Shared.map --recode --out AMC
-gatk -T CombineVariants -R /home/amel45/AM45/am45new.fasta  --variant HYG.recode.vcf --variant AMC.recode.vcf -o HYGmergedAMC.vcf -genotypeMergeOptions REQUIRE_UNIQUE
+
+gatk -T CombineVariants -R /home/amel45/AM45/am45new.fasta  --variant HYG.recode.vcf 
+	/ --variant AMC.recode.vcf 
+	/ -o HYGmergedAMC.vcf 
+	/ -genotypeMergeOptions REQUIRE_UNIQUE
+
 vcftools --vcf HYGmergedAMC.vcf --max-alleles 2 --plink  --out AMCHYG
+
 plink --noweb --file AMCHYG --genome
 </code></pre>
 
