@@ -35,7 +35,7 @@ e.g.
 
 save.image(file="/media/data1/forty3/drone/FST/SelvsCon/SelectedvsControlFSTPvals.RData")
 
-* I also ran [pFST](https://github.com/jewmanchue/vcflib/wiki/Association-testing-with-GPAT) using pFST.sh and added this to the previous dataframe of FST values. Then ran FDR using Storey's Q method. Significant FST was based on q<0.01 (or, -log10(P)>2.61)
+* I also ran [pFST](https://github.com/jewmanchue/vcflib/wiki/Association-testing-with-GPAT) using pFST.sh and added this to the previous dataframe of FST values. Then ran FDR using Storey's Q method. Significant FST was based on q<0.01 (or, -log10(P)>2.61). I did the same for AMC SNPs (same script)
 
 
 ##Admixture Analyses
@@ -66,6 +66,12 @@ plink --file AMCHYGHIGH --noweb --make-bed --out AMCHYGHIGH
 plink --file AMCHYGHIGH --noweb --make-bed --out AMCHYGHIGH
 /home/brock/admixture/admixture  --cv=10 AMCHYGHIGH.bed 3 -j2 | tee log3.out
 </code></pre>
+
+<!---
+for K in 1 2 3 4 5; \
+do /home/brock/admixture/admixture  --cv=10 AMCHYGHIGH.bed $K -j20 | tee log${K}.out; done
+grep -h CV log*.out
+-->
 
 * I used this to look at differences in introgression between selected and control lines at significant SNPs
 
@@ -111,7 +117,16 @@ With these lists I looked for genes with significant FST SNPs (HYGFSTAnalyses.r 
 ###GO Analysis
 I've focussed solely on significant FST genes for the time. I used GOstats (BostatsBEE.r) with a gene universe composed of fly orthologs to honey bee genes. For the first test, I used any-old gene with a significant SNP. For the second analysis, I used only genes with NSYN SNPs that had significantly more significant SNPs (that's fun to say) than expected by chance. My permutation procedure can be seen in HYGFSTAnalyses.r (~line 182). 
 
+<!---
 
+###Selection over longer time frames?
+I'm going to pull out the list of significant genes and see if they have evidence of selection over longer times within Apis (Gamma), and between populations (Pi, TD, Fst).
+
+
+
+###I'D LIKE TO TRY EXEHH http://hgdp.uchicago.edu/Software/
+
+-->
 
 ###Plotting Data
 All FST plot scripts can be found as .r files

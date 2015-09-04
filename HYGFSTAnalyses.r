@@ -4,6 +4,7 @@
 
 
 #Analysis of Fst following pFST (pFST.sh) and VCFFst (DroneFst.r)
+	#RE: DRIFT http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3878089/
 
 
 
@@ -419,26 +420,16 @@ nsyn = nsyn[c(18,3,4,8,11,13,14)]
 test = merge(sigFST, nsyn, by = "SNP")	
 test[test$V13=="NON_SYNONYMOUS_CODING",]
 	#494 coding SNPs are nonsynonymous
-test$V8[test$V13=="NON_SYNONYMOUS_CODING"]
+test=test[test$V13=="NON_SYNONYMOUS_CODING",]
 	
 	
 	
-# Low- high and FST between AMC ------------------------
-	#Are these genes closer related to A, M, or C?
-		#I think I need to do this with STRUCTURE.
-	#CommonSNPs.sh 
-	#Ran ADMIXTURE and selected bees at High FST SNPs were less "M" and "C" than control bees at the same SNPs
-	#SelvsConADMIXTURE.txt	
-admix = read.table(file="SelvsConADMIXTURE.txt",header=T)
-	#significantly shifted to be less M and C so either 1) A is more hygienic or 2) in this mixed background, A at these sites is more hygienic.
-		#http://www.tandfonline.com/doi/pdf/10.1080/0005772X.1998.11099408	
-	#plotted with HighFSTAdmixPlot.r
-		
-		
-		
+	
 		
 		
 # QTL Regions ------------------------
+	#This is manual, for now.
+
 #From Oxley et al.
 qtl.hyg1 = (sigFST[grep("^2.19",sigFST$SNP),])
 qtl.hyg1$chrPOS = gsub(".*:","",qtl.hyg1$SNP)
@@ -498,9 +489,6 @@ qtlgene.hyg3.3[which(qtlgene.hyg3.3$chrPOS < 920721),]
      #81 snps here, 15 gnes
 
 
-
-
-
 #UBX is in there, hmm 
 			#http://dev.biologists.org/content/135/20/3435.full
 			#http://www.sdbonline.org/sites/fly/segment/ultrabt5.htm
@@ -511,140 +499,328 @@ qtlgene.hyg3.3[which(qtlgene.hyg3.3$chrPOS < 920721),]
 			#MAxila have Octomamene receptors in the brain (re: SPivak paper)
 			#http://www.researchgate.net/profile/Hans_Smid/publication/40113610_Octopamine-like_immunoreactivity_in_the_brain_and_suboesophageal_ganglion_of_two_parasitic_wasps_Cotesia_glomerata_and_Cotesia_rubecula/links/02e7e52fc87ac6bc48000000.pdf#page=61
 			#Seratonin suppresses ant feeding, OA? http://www.sciencedirect.com/science/article/pii/S0022191011002605
-		
 	
-
-
-
-
 	
+	
+	
+#Spotter's QTLs?		
+
+#And in genes?
+qtlgene.hyg1.spot = (Genic.Fst1[which(Genic.Fst1$CHROM=="1"),])
+qtlgene.hyg1.spot = qtlgene.hyg1.spot[which(qtlgene.hyg1.spot$POS > 3039231 & qtlgene.hyg1.spot$POS < 8453574),]
+	#66 SNPs, 7 genes 
+qtlgene.hyg1.1.spot = (Genic.Fst1[which(Genic.Fst1$CHROM=="1"),])
+qtlgene.hyg1.1.spot = qtlgene.hyg1.1.spot[which(qtlgene.hyg1.1.spot$POS > 9418717 & qtlgene.hyg1.1.spot$POS < 16819942),]
+lenunique(qtlgene.hyg1.1.spot$GB)
+nrow(qtlgene.hyg1.1.spot)
+	#299 SNPs, 37 genes 
+qtlgene.hyg2.spot = (Genic.Fst1[which(Genic.Fst1$CHROM=="2"),])
+qtlgene.hyg2.spot = qtlgene.hyg2.spot[which(qtlgene.hyg2.spot$POS > 1 & qtlgene.hyg2.spot$POS < 12503099),]
+lenunique(qtlgene.hyg2.spot$GB)
+nrow(qtlgene.hyg2.spot)
+	#852 SNPs, 94 genes 
 		
-###########################################################################################################
-vcftools --vcf HYGmergedAMC.vcf  --weir-fst-pop  /media/data1/afz/git/M.plink  --weir-fst-pop /media/data1/forty3/drone/vcf_drone/pop2.txt --maf 0.05 --out MvLHB
-vcftools --vcf HYGmergedAMC.vcf  --weir-fst-pop  /media/data1/afz/git/M.plink  --weir-fst-pop /media/data1/forty3/drone/vcf_drone/Selpop.txt --maf 0.05 --out MvHHB
-
-vcftools --vcf HYGmergedAMC.vcf  --weir-fst-pop  /media/data1/afz/git/C.plink  --weir-fst-pop /media/data1/forty3/drone/vcf_drone/pop2.txt --maf 0.05 --out CvLHB
-vcftools --vcf HYGmergedAMC.vcf  --weir-fst-pop  /media/data1/afz/git/C.plink  --weir-fst-pop /media/data1/forty3/drone/vcf_drone/Selpop.txt --maf 0.05 --out CvHHB
-
-
-#Isolate all common SNPs
-fstLM = read.table(file="MvLHB.weir.fst",header=T,colClasses=rep("character",3));names(fstLM)[3]="FSTLM"
-fstLM = fstLM[which(as.numeric(fstLM$FST)>0),]
-fstLM$SNP = paste(fstLM$CHROM,fstLM$POS, sep=":")
-
-fstHM = read.table(file="MvHHB.weir.fst",header=T,colClasses=rep("character",3));names(fstHM)[3]="FSTHM"
-fstHM = fstHM[which(as.numeric(fstHM$FST)>0),]
-fstHM$SNP = paste(fstHM$CHROM,fstHM$POS, sep=":")
-
-fstLC = read.table(file="CvLHB.weir.fst",header=T,colClasses=rep("character",3));names(fstLC)[3]="FSTLC"
-fstLC = fstLC[which(as.numeric(fstLC$FST)>0),]
-fstLC$SNP = paste(fstLC$CHROM,fstLC$POS, sep=":")
-
-fstHC = read.table(file="CvHHB.weir.fst",header=T,colClasses=rep("character",3));names(fstHC)[3]="FSTHC"
-fstHC = fstHC[which(as.numeric(fstHC$FST)>0),]
-fstHC$SNP = paste(fstHC$CHROM,fstHC$POS, sep=":")
-
-
-snps=(Reduce(intersect, list(fstLM$SNP ,fstHM$SNP,fstLC$SNP ,fstHC$SNP )))
-fstLM=fstLM[fstLM$SNP %in% snps,]
-fstHM=fstHM[fstHM$SNP %in% snps,]
-fstLC=fstLC[fstLC$SNP %in% snps,]
-fstHC=fstHC[fstHC$SNP %in% snps,]
-
-conv=data.frame(cbind(fstLM[4],fstHM[3],fstHC[3],fstLM[3],fstLC[3] ))
-
-
-
-#as per Zayed and Whitfield
-conv$Hdis=with(conv,(as.numeric(FSTHM)/(as.numeric(FSTHM) + as.numeric(FSTHC)))) #Higher Hdis indicates more M
-conv$Ldis=with(conv,(as.numeric(FSTLM)/(as.numeric(FSTLM) + as.numeric(FSTLC))))
-conv$difs =  conv$Hdis - conv$Ldis # high difs indicates more M in selected
-
-
-#difs in sigFST
-boxplot(conv$difs, conv$difs[conv$SNP %in% sigFST$SNP],	notch=T	)
-	#quick perm test
-	#pnorm(mean(conv$difs[conv$SNP %in% sigFST$SNP]), mean=mean(perm.conv), sd = sd(perm.conv))
-
-
-
-boxplot(as.numeric(conv$FSTHM[conv$SNP %in% sigFST$SNP]),as.numeric(conv$FSTLM[conv$SNP %in% sigFST$SNP]))		
-		
-		
-		
+qtlgene.hyg6.spot = (Genic.Fst1[which(Genic.Fst1$CHROM=="2"),])
+qtlgene.hyg6.spot = qtlgene.hyg6.spot[which(qtlgene.hyg6.spot$POS > 11206828 & qtlgene.hyg6.spot$POS < 17739083),]
+lenunique(qtlgene.hyg6.spot$GB)
+nrow(qtlgene.hyg6.spot)
+	#94 SNPs, 7 genes 	
 		
 
-x11();boxplot(as.numeric(fstHC$FSTHC[fstHC$SNP %in% sigFST$SNP]),as.numeric(fstHM$FSTHM[fstHM$SNP %in% sigFST$SNP]))
-	# High bee SNPs become more "C" like.
+qtlgene.hyg7.spot = (Genic.Fst1[which(Genic.Fst1$CHROM=="2"),])
+qtlgene.hyg7.spot = qtlgene.hyg7.spot[which(qtlgene.hyg7.spot$POS > 9515998 & qtlgene.hyg7.spot$POS < 12848973),]
+lenunique(qtlgene.hyg7.spot$GB)
+nrow(qtlgene.hyg7.spot)
+	#187 SNPs, 21 genes 			
+		
+qtlgene.hyg12.spot = (Genic.Fst1[which(Genic.Fst1$CHROM=="2"),])
+qtlgene.hyg12.spot = qtlgene.hyg12.spot[which(qtlgene.hyg12.spot$POS > 1 & qtlgene.hyg12.spot$POS < 4003353),]
+lenunique(qtlgene.hyg12.spot$GB)
+nrow(qtlgene.hyg12.spot)
+	#72 SNPs, 9 genes 
 	
+qtlgene.hyg13.spot = (Genic.Fst1[which(Genic.Fst1$CHROM=="2"),])
+qtlgene.hyg13.spot = qtlgene.hyg13.spot[which(qtlgene.hyg13.spot$POS > 5247545 & qtlgene.hyg13.spot$POS < 10266737),]
+lenunique(qtlgene.hyg13.spot$GB)
+nrow(qtlgene.hyg13.spot)		
+		#373 SNPs, 50 genes 
+
+qtlgene.hyg15.spot = (Genic.Fst1[which(Genic.Fst1$CHROM=="2"),])
+qtlgene.hyg15.spot = qtlgene.hyg15.spot[which(qtlgene.hyg15.spot$POS > 1 & qtlgene.hyg15.spot$POS < 6643609),]
+lenunique(qtlgene.hyg15.spot$GB)
+nrow(qtlgene.hyg15.spot)	
+		#583 SNPs, 53 genes 		
+
+		
+qtlgene.hyg16.spot = (Genic.Fst1[which(Genic.Fst1$CHROM=="2"),])
+qtlgene.hyg16.spot = qtlgene.hyg16.spot[which(qtlgene.hyg16.spot$POS > 3196393 & qtlgene.hyg16.spot$POS < 6242592),]
+lenunique(qtlgene.hyg16.spot$GB)
+nrow(qtlgene.hyg16.spot)			
+		#366 SNPs, 39 genes 		
+
+
+
+		
+		
+		
+		
 	
-boxplot(as.numeric(fstHM$FSTHM[fstHM$SNP %in% sigFST$SNP]),
-		as.numeric(fstLM$FSTLM[fstLM$SNP %in% sigFST$SNP]), 
-		as.numeric(fstHM$FSTHM),
-		as.numeric(fstLM$FSTLM),
-		names = c("Selected High FST",
-			"Control High FST",
-			"Selected All",
-			"Control All"),
-		notch=T	)
+		
+		
+# Low- high and FST between AMC ------------------------
+	#Are these genes closer related to A, M, or C?
+		#I think I need to do this with STRUCTURE.
+	#CommonSNPs.sh 
+	#Ran ADMIXTURE and selected bees at High FST SNPs were less "M" and "C" than control bees at the same SNPs
+	#SelvsConADMIXTURE.txt	
+admix = read.table(file="SelvsConADMIXTURE.txt",header=T)
+	#significantly shifted to be less M and C so either 1) A is more hygienic or 2) in this mixed background, A at these sites is more hygienic.
+		#http://www.tandfonline.com/doi/pdf/10.1080/0005772X.1998.11099408	
+	#plotted with HighFSTAdmixPlot.r
+		
+		
+		
+		
+# Longer-term selection ------------------------			
+	#Gamma in hygiene-associated genes? TD? Pi?
+
+#load datasets (Pi, TD, gamma)
+gamm = read.table(file = "/media/data1/forty3/brock/immune/Gene_gamma.txt", header=T)
+kaks = read.table(file="/media/data1/forty3/brock/immune/KAKS.out")
+names(kaks) =  c("GB", "c.ks", "m.ks", "y.ks", "a.ks", "c.ka", "m.ka", "y.ka", "a.ka" )
+kaks$kaks = kaks$a.ka/kaks$a.ks
+kaks = kaks[kaks$a.ks>0,]
+Pi = read.table(file="/media/data1/forty3/brock/immune/A.snpeff1.eff.Pi")
+names(Pi) = c("GB", "NS","NN", "NumS", "NumN", "PiS", "PiN")
+source("/media/data1/forty3/brock/scripts/VarFunct.r")
+TD = read.table(file="/media/data1/forty3/brock/balancedSNPs/data/A.recode.vcf.ETD")
+TD = aggregate(TD$V4, by=list(TD$V1),mean); names(TD)=c("GB","TD")
+
+
+#divergence and Pi	
+test = merge(Pi, kaks, by="GB")
+test = test[which(test$NumS>5),]	
+	
+sigFSTperm$Category = rep("hyg", nrow(sigFSTperm))
+test2=merge(gamm, sigFSTperm, all.x=T, by="GB")
+cat = as.vector(test2$Category)
+cat[is.na(cat)]="all"	
+test2$Category=cat	; rm(cat)	
 
 	
-boxplot(as.numeric(fstHC$FSTHC[fstHC$SNP %in% sigFST$SNP]),
-	as.numeric(fstLC$FSTLC[fstLC$SNP %in% sigFST$SNP]), 
-	as.numeric(fstHC$FSTHC),
-	as.numeric(fstLC$FSTLC),
-	names = c("Selected High FST",
-		"Control High FST",
-		"Selected All",
-		"Control All"),
-	notch=T	)
+perm.test(test2$gamma, 596, test2$gamma[(test2$Category=="hyg")], 10000)		
+		# P (hyg gene Gamma) is 0.0127, so it's significant. (without hyg genes)
+		# P (hyg gene Gamma) is 0.02214854 (with hyge genes, above)
+#So these genes are under selection voer long term.	
+		
 
-#Selected bees less at those SNPs.
+#divergence and Pi	 - Nothing remarkable here. about the same as genome average.
+test = merge(Pi, kaks, by="GB")
+test = test[which(test$NumS>5),]
+test = merge(test, test2, by = "GB")
+boxplot(test$PiS~test$Category,notch=T) #NS
+boxplot(test$PiN~test$Category,notch=T) #NS
+boxplot(test$kaks~test$Category,notch=T) #NS
+boxplot(test$NS~test$Category,notch=T) #NS
+
+
+
+
+
+# QWD biased genes? ------------------------			
+	#high.genes.perm in QWD List
+
+load(file="/media/data1/forty3/brock/expression_data/DWQ_expression.RData")
+#for exclusive genes:
+#follow CK's instructions:
+Q<-as.character(Grozinger2007QueenGenes1$GB)
+W<-as.character(Grozinger2007WorkerGenes1$GB)
+g<-as.character(ZayedDroneWorker$GB); D<-g[ZayedDroneWorker$W.D.1=="D" & (ZayedDroneWorker$casteF1_fdr<.05)]
+D1<-setdiff(D,W); D1<-setdiff(D1,Q); W1<-setdiff(W,D); Q1<-setdiff(Q,D)	
+
+test = gff ; qwd = rep("N", nrow(test)); 
+qwd[test$V2 %in% Q1] = "Q" 
+qwd[test$V2 %in% W1] = "W" 
+qwd[test$V2 %in% D1] = "D"   	
+test$qwd = qwd
+
+qwd = rep("N", nrow(test)); 
+qwd[test$V2 %in% high.genes.perm] = "sig" 
+test$sig = qwd
+aggregate(test$sig, by = list(test$qwd), table)
+#  Group.1   x.N x.sig
+#1       D   819    42
+#2       N 11200   507
+#3       Q   366    14
+#4       W   319    18
+
+#no tendancy to be caste-bias in expression.
+
 	
+
+	
+# Longer-term selection ------------------------
+		#COMPARE SNP versus SNP Selected herein versus FST between.....
+
+		
+SC.pfst = PFST[c(1,4,5,6)]; names(SC.pfst)[4]="SCq"
+M.pfst = read.table(file="M.counts",header=F)
+M.pfst$q = qvalue0(M.pfst$V3)$q		
+M.pfst$SNP = paste(M.pfst$V1, M.pfst$V2, sep=":")
+test = merge(SC.pfst, M.pfst, by="SNP")
+test$wt2 <- as.numeric(cut(test$SCq, 15))
+test2 = aggregate(as.numeric(test$q), by =list(test$wt2), mean)
+	#high as you go from 1-15
+#M and SC SNP q values not correlated.
+#C and SC SNP q values not correlated. 
+#A and SC SNP q values not correlated.
+	
+
+
+	
+	
+	
+# Do they make up any known networks? Are they TFs? Are they central? ------------------------			
+	#high.genes.perm vs TRN 
+test = trn 
+qwd = rep("N", nrow(test)); 
+qwd[test$GB %in% high.genes.perm] = "sig" 
+test$sig = qwd
+aggregate(test$sig, by = list(test$TFTARG), table)
+#  Group.1  x.N x.sig
+#1    TARG 1522    73
+#2      TF  179    10
+	#NS (Fisher exact test)
+	#no difference in connectedness|TF or targ (AOV)
+#significant TFs:	
+#GB45062	11c18g	FBgn0000099	ap	GB18585	-	apterous
+#GB52746	14c14g	FBgn0050443	LOC100578743	0	-	zinc finger protein 90-like
+#GB48999	1c15g	FBgn0001994	crp	GB14420	-	cropped
+#GB49105	3c4g	FBgn0000567	E74	GB10759	-	ecdysteroid-regulated gene E74
+#GB53328	9c12g	FBgn0024887	kin17	GB16193	-	kin17 protein
+#GB50071	15c19g	FBgn0011655	Smad4	GB18981	Med	mothers against decapentaplegic homolog 4
+#GB55837	3c8g	FBgn0032940	Mio	GB12214	-	Mlx interactor
+#GB45051	11c18g	FBgn0261647	LOC408351	GB17247	-	uncharacterized LOC408351
+#GB49751	2c18g	FBgn0003460	LOC551364	GB15974	-	uncharacterized LOC551364
+#GB49969	15c19g	FBgn0039530	LOC409680	GB18478	-	tubby-related protein 4-like
+#
+
 	
 	
 
 	
 	
 	
+# Old versus new genes? ------------------------		
+trg = read.table(file="clipboard",header=T) #this is straigth from my PNAS paper (SD5)
+test = trg 
+qwd = rep("N", nrow(test)); 
+qwd[test$GB %in% high.genes.perm] = "sig" 
+test$sig = qwd
+aggregate(test$sig, by = list(test$Taxa), table)	
+#	      Group.1  x.N x.sig
+#1        Apis   86     2
+#2     Apoidea  210     5
+#3 Hymenoptera 1270    51
+#4     Insecta 8267   419
+#
+	# Insecta versus non-insect (P value equals 0.0323) is significant.
+	#More conserved genes than less conserved genes.
 	
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-boxplot(as.numeric(fstHM$FSTHM[fstHM$SNP %in% test$SNP]),
-		as.numeric(fstLM$FSTLM[fstLM$SNP %in% test$SNP]), 
-		as.numeric(fstHM$FSTHM),
-		as.numeric(fstLM$FSTLM),
-		names = c("Selected High FST",
-			"Control High FST",
-			"Selected All",
-			"Control All"),
-		notch=T	)
+# Expression? ------------------------		
+	#Use Johnson's Data (Johnson_TableS3.xlsx)
+exp = read.table(file="clipboard",header=T)
+test = exp 
+qwd = rep("N", nrow(test)); 
+qwd[test$GB %in% high.genes.perm] = "sig" 
+test$sig = qwd	
+aggregate(test$sig, by = list(test$Taxonomy), table)		
+	#Similar to above, "Conserved" have more The two-tailed P value is less than 0.0001
+#	Group.1	x.N	x.sig
+#1	Arthropod	208	6
+#2	Bee	24	0
+#3	Conserved	5165	249
+#4	Hymenoptera	385	7
+#5	Insect	549	14
+#6	Orphan	191	0
+#7	O-TRGs	783	24
+#
 
+#Not highly expressed (relative to all expression) in all tissues.
+
+boxplot(log10(1+test$brn[test$brn>25])~test$sig[test$brn>25])
+	#check insect and hymenoptera and O-TRG
+test2 = test[which(test$brn>25),] 
+boxplot(log10(1+test2$brn[test2$Taxonomy=="O-TRGs"])~test2$sig[test2$Taxonomy=="O-TRGs"])
+#They are not over-expressed in any single Nurse tissue (Brain included).
+
+
+#Come back to this later, there is somethign here.
+
+# I repeated the same analysis for significant FST genes between pops (above for Sel vs Con). 
+		#Are the saem genes and same SNPs high FST between these pops?
+			#out of laziness, I'm going to use the same SNPs......
+SC.pfst = PFST[c(1,4,5,6)]; names(SC.pfst)[4]="SCq"
+M.pfst = read.table(file="A.counts",header=F)
+M.pfst$q = qvalue0(M.pfst$V3)$q		
+M.pfst$SNP = paste(M.pfst$V1, M.pfst$V2, sep=":")
+M.pfst =  merge(M.pfst, SC.pfst, by="SNP")	
+sigFST.M = M.pfst[M.pfst$q < 0.01,]
+Genic.Fst.M = c()
+chrom = intersect(gff$V1,sigFST.M$CHROM)
+for(i in chrom){
+	win.temp = gff[gff$V1==i,]
+	deg.temp = sigFST.M[which(as.character(sigFST.M$CHROM)==as.character(i)),]
+	blah=outer(as.numeric(deg.temp$POS), as.numeric(as.character(win.temp$V3)), ">=") 
+	blah1=outer(as.numeric(deg.temp$POS), as.numeric(as.character(win.temp$V4)), "<=") 
+	blah=(which(blah1=="TRUE" & blah=="TRUE", arr.ind=T)) #The gene region will be the colum variable
+	temp = deg.temp[blah[,1],]
+	temp = cbind(temp, win.temp[blah[,2],])
+	Genic.Fst.M = rbind(temp,Genic.Fst.M)
+	print(i)
+}
+names(Genic.Fst.M)[10] ="GB"
+high.genes.M = as.character(unique(Genic.Fst.M$GB))	
+sum(high.genes %in% high.genes.C)
+#[1] 571 !!!! WHAT!~ 88% of high.genes is in this list......
+sum(high.genes %in% high.genes.A) #high.genes.X contain the genes with high FST outliers in pop-level comparisons.
+#573
+sum(high.genes %in% high.genes.M) 
+#559
+
+	#check against my permuted SNPs sigFSTperm
+high.genes.perm = sigFSTperm$GB[sigFSTperm$GB %in% nsyn$V8]
+sum(high.genes.perm %in% high.genes.C)
+#523
+sum(high.genes.perm %in% high.genes.A) 
+#522
+sum(high.genes.perm %in% high.genes.M) 	
+#511		
+		
+		
+test = merge(Genic.Fst.M, nsyn.1, by="SNP")
+high.genes.M = as.character(unique(test$GB))			
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 	
-x11();boxplot(as.numeric(fstHC$FSTHC[fstHC$SNP %in% test$SNP]),
-	as.numeric(fstLC$FSTLC[fstLC$SNP %in% test$SNP]), 
-	as.numeric(fstHC$FSTHC),
-	as.numeric(fstLC$FSTLC),
-	names = c("Selected High FST",
-		"Control High FST",
-		"Selected All",
-		"Control All"),
-	notch=T	)
-	
-	
-	
-	
+		
+		
+		
+		
+		
+		
+		
 	
 	
