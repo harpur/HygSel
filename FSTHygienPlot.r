@@ -11,7 +11,7 @@
 
 #I'm going to plot -log10(pFST) from the dataframe PFST and colour significant Q values as red, or something.
 df.fst = PFST[with(PFST, order(POS)),]
-df.fst$logP = -log10(df.fst$P) #ranges 0-12
+df.fst$logP = -log10(as.numeric(df.fst$P)) #ranges 0-12
 
 
 #Create a function to generate a continuous color palette
@@ -21,7 +21,7 @@ rbPal = colorRampPalette(c("blue", "red"))
 # based on the y values
 df.fst$Col <- rbPal(30)[as.numeric(cut(df.fst$logP,breaks = 30))]
 
-pdf(file="pFSTPlotHygiene.pdf")
+tiff(file="pFSTPlotHygiene.tiff",res=300,width=1000, height=1500)
 #Main Plot
 par(mfrow = c(8, 2),
 	cex = 0.4, 

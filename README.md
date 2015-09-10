@@ -117,6 +117,13 @@ With these lists I looked for genes with significant FST SNPs (HYGFSTAnalyses.r 
 ###GO Analysis
 I've focussed solely on significant FST genes for the time. I used GOstats (BostatsBEE.r) with a gene universe composed of fly orthologs to honey bee genes. For the first test, I used any-old gene with a significant SNP. For the second analysis, I used only genes with NSYN SNPs that had significantly more significant SNPs (that's fun to say) than expected by chance. My permutation procedure can be seen in HYGFSTAnalyses.r (~line 182). 
 
+
+###TL;DR
+Check in HYGFSTAnalyses.r
+
+
+
+
 <!---
 
 ###Selection over longer time frames?

@@ -15,13 +15,13 @@
 
 # Libraries and functions ------------------
 source("http://bioconductor.org/biocLite.R")
-biocLite("GOstats")
+#biocLite("GOstats")
 library("GOstats")
 library("AnnotationForge")
 library("GSEABase")
 #available.dbschemas() #lists available data packages
 library("drosophila2.db") #Download a database from those that are available
-library("KEGG.db")
+#library("KEGG.db")
 
 #load database for GO analyses and prepare GO data.frame and GeneSetCollection ---------------
 k = (keys(drosophila2.db,keytype="GO")) # I read in our dros. orthologs
@@ -39,9 +39,14 @@ gsc = GeneSetCollection(goAllFrame, setType = GOCollection())
 	
 
 # Prepare gene universe and your test set --------------------------------
-universe = goframeData$frame.gene_id #define your gene universe
-genes = sample(universe,567,replace=FALSE)#define your genes of interest
-#genes = as.character(unique(unlist(read.table(file="clipboard")$V1)))
+#universe
+	#= goframeData$frame.gene_id #define your gene universe
+universe = read.table(file="FBGN.txt",header=T)
+universe = unlist(as.character(universe$FGN[!is.na(universe$FGN)]))
+universe = universe[!duplicated(universe)]
+#genes
+genes = as.character(unique(unlist(read.table(file="clipboard")$V1)))
+
 
 #  Perform tests --------------------------------
 #Kindly provded by Sasha (thanks, man)
@@ -74,8 +79,58 @@ outcomeCC <- hyperGTest(GSEAGOHyperGParams(name = "lrt",
 #head(summary(outcomeCC))
 		
 
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+
+		
+# Permutation procedure:	
+		
+# Prepare gene universe and your test set --------------------------------
+universe = goframeData$frame.gene_id #define your gene universe
+#genes = sample(universe,567,replace=FALSE)#define your genes of interest
+genes = as.character(unique(unlist(read.table(file="clipboard")$V1)))
 
 
+for(i in 25:30){
+	universe1 = sample(universe, length(genes),replace=F)
+	
+	if(sum(universe1 %in% genes)<5){
+	print("no genes here, man")	
+	}else{
+	outcomeBP <- hyperGTest(GSEAGOHyperGParams(name = "lrt", 
+				geneSetCollection=gsc,
+				geneIds = as.character(genes),
+				universeGeneIds = as.character(universe1),
+				ontology = "BP",
+				pvalueCutoff = 0.05,
+				conditional = FALSE,
+				testDirection = "over"))
+	test = summary(outcomeBP)
+	if(nrow(test)<1){
+	print("done")
+	}else{
+	test$REP = rep(i, nrow(test))		
+	write.list(test,file="Output",append=T)
+	}
+	}
+}
+		
+		
+		
+		
 		
 #  KEGG Pathways --------------------------------			
 	#		
