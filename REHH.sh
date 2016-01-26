@@ -98,7 +98,7 @@ write.list(test[test$Pvalue<0.05,],file="IHS.out",append=T)
 
 
 #page 22 of manual
-hap=data2haplohh(hap_file="DroneSampsPH_1.haps",map_file="DroneSampsPH_1.inp")
+hap=data2haplohh(hap_file="DroneSampsPH_1_sel.haps",map_file="DroneSampsPH_1.inp")
 #hap_chr_5.con
 #hap_chr_1.sel 
 

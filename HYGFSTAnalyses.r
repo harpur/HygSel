@@ -138,6 +138,153 @@ write.list(FSTFBGN$FGN, file="GOFst.perm")
  
  
  
+ # Upstream of genes?  ----------------------
+ 
+ # Load functions and dataframes -------------------------
+source("/media/data1/forty3/brock/scripts/VarFunct.r")
+gff = read.table(file = "/media/data1/forty3/R/GFF3_2",header=T)
+chrs = gff[c(1,8)]
+chrs = chrs[!duplicated(chrs$GB),]; names(chrs)[2] = "Group.1"
+
+# Isolate + strand genes and define gene region and utr region -----------------------------
+gf.plus = gff[gff$strand=="+",]
+gf.plus.st = aggregate(gf.plus$start, by = list(gf.plus$GB), min)
+gf.plus.st$en = aggregate(gf.plus$end, by = list(gf.plus$GB), max)$x
+utr = gf.plus.st$x - 1000 
+utr[utr<1] = 1 #if there is less than 1 Kb infront of the gene, set it equal to 1
+gf.plus.st$utr = utr
+
+# Isolate - strand genes and define gene region and utr region -----------------------------
+gf.neg = gff[gff$strand=="-",]
+gf.neg.en = aggregate(gf.neg$end, by = list(gf.neg$GB), max)
+gf.neg.en$en = aggregate(gf.neg$start, by = list(gf.neg$GB), min)$x
+utr = gf.neg.en$x + 1000 
+gf.neg.en$utr = utr
+gf.utr = rbind(gf.neg.en, gf.plus.st)
+#gf.utr$high = apply(gf.utr[c(2,3,4)],1,max) 
+#gf.utr$low = apply(gf.utr[c(2,3,4)],1,min)
+gf.utr = merge(chrs, gf.utr,by="Group.1")
+gf.utr = (gf.utr[-grep("17[.]",gf.utr$chrom),])
+
+
+# Get out SNPs in UTRs -----------------------------
+
+gf.utr$high = apply(gf.utr[c(3,5)],1,max) 
+gf.utr$low = apply(gf.utr[c(3,5)],1,min)
+utr.out.snps = c()
+
+for (i in unique(gf.utr$chrom)){
+	set = gf.utr[gf.utr$chrom==i,]
+	snps = fst23[fst23$chr==i,]
+	blah1=outer(snps$POS,set$high, "<=") 
+	blah=outer(snps$POS,set$low, ">=") 
+
+
+	blah=(which(blah1=="TRUE" & blah=="TRUE", arr.ind=T))
+	if(is.null(nrow(blah))){
+	print(i)
+	}else{
+	overlap = snps[blah[,1],]
+	count = duplicated(overlap$POS) #to ensure I have no overlapping UTRs
+	pos = overlap$V2[count=="TRUE"]
+	count[overlap$V2 %in% pos] = "TRUE"
+	overlap$count = count
+	overlap$GB = set[blah[,2],1]
+	utr.out.snps = rbind(utr.out.snps,overlap)
+	}
+}
+
+
+# Get list of overlapping UTRS/Genes -----------------------------
+duplic.utr = as.character(unique(utr.out.snps$GB[utr.out.snps$count=="TRUE"])) 
+utr.FST = utr.out.snps[!(utr.out.snps$GB %in% duplic.utr),]
+	#only 3292 SNPs within UTRs (100bp upstram)
+
+
+
+
+
+#UTR permutation -------------------------
+PFST$chr = gsub("[:].*","", PFST$SNP)
+PFST$posit = gsub(".*[:]","", PFST$SNP)
+# Analysis ---------------------------
+	#Generate expected distribution to see if number of high FST snps per gene is expected by chance alone.
+
+	
+	
+for(x in 1:100){
+Utr.Fstq = c()
+chrom = intersect(gf.utr$chrom,PFST$chr)
+PFSTp = transform(PFST, q = sample(q))
+for(i in chrom){
+	win.temp = gf.utr[gf.utr$chrom==i,]
+	deg.temp = PFSTp[which(as.character(PFSTp$chr)==as.character(i)),]
+	blah=outer(as.numeric(deg.temp$posit), as.numeric(as.character(win.temp$low)), ">=") 
+	blah1=outer(as.numeric(deg.temp$posit), as.numeric(as.character(win.temp$high)), "<=") 
+	blah=(which(blah1=="TRUE" & blah=="TRUE", arr.ind=T)) #The gene region will be the colum variable
+	temp = deg.temp[blah[,1],]
+	temp = cbind(temp, win.temp[blah[,2],])
+	Utr.Fstq  = rbind(temp,Utr.Fstq)
+	print(c(i,x))
+	#add x, idiot.
+	}
+write.list(Utr.Fstq, file="UTR.Fstq",append=T)
+}
+
+
+#estimate number of expected low Q SNPs
+library(data.table)
+Utr.Fstq =  fread("UTR.Fstq",header=FALSE,colClasses="character")
+Utr.Fstq = data.frame(Utr.Fstq)
+grp = c(1:nrow(Utr.Fstq))
+#made grp group ings grp[grp>1 & grp<265579]=1
+#grp = c(1:nrow(Genic.Fstq))
+#grp[grp>=1 & grp<=265579]=1
+#grp[grp>=265580 & grp<=531158]=2
+Utr.Fstq$grp = grp
+Utr.Fstq$V6 = as.numeric(Utr.Fstq$V6)
+expect =  aggregate(Utr.Fstq$V6, by=list(Utr.Fstq$V9, Utr.Fstq$grp), function(x) length(x[x<0.01]))
+#number of high FST SNPs within eacvh gene for each permutation
+
+#number of high FST SNPs within eacvh gene for each permutation
+mn =  aggregate(expect$x, by = list(expect$Group.1), mean)
+sd =  aggregate(expect$x, by = list(expect$Group.1), sd)
+expect = merge(mn, sd, by="Group.1")
+
+
+#Output observed.
+test = PFST[c(1,5,6)]
+test = merge(utr.FST, test, by = "SNP")
+test = test[which(test$q<0.01),] #only 142 SNPs significant in UTRs
+obs = aggregate(test$GB, by=list(test$GB), length) 	#only 70 UTRs significant and only 11 with permutation evidence.
+names(obs)[2] = "obs"	
+test = merge(obs, expec, by = "Group.1")	
+
+test$p = apply(test, 1, function(x) pnorm(as.numeric(x[2]),mean=as.numeric(x[3]),sd=as.numeric(x[4]),lower.tail=FALSE))	
+names(test)[1]="GB"	
+sigFSTpermUTR = test #contains significant SNPs within gene regions.
+high.UTR.perm = as.character(sigFSTpermUTR$GB[sigFSTpermUTR$p<0.05])
+
+
+	
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
  
 	
 # NSYN SNPs in my highpFST list? ------------------------
@@ -732,6 +879,11 @@ boxplot(log10(1+test2$brn[test2$Taxonomy=="O-TRGs"])~test2$sig[test2$Taxonomy=="
 
 
 
+
+
+
+
+
 # Overlap with Parker et al. data
 	#http://www.genomebiology.com/2012/13/9/R81
 	#I think the additional dataset labels might be incorrect-> ask LF
@@ -760,16 +912,32 @@ boxplot(log10(1+test2$brn[test2$Taxonomy=="O-TRGs"])~test2$sig[test2$Taxonomy=="
 
 #SNP Characterization
 	#What do the SNPs in genes I've got actually do?
+		#From SNPEFF.sh, make nysn, intr, ext via: sed '/INTRON/ !d' Hyg.snpeff.eff > introns.eff
 
 	
-#Run on AfrSNPs.raw.vcf, it contains all SNPs 
-java -jar /usr/local/lib/snpEff2/snpEff.jar Amel -o txt --vcf /media/data1/forty3/drone/vcf_drone/DroneSelectionFinal.recode.vcf  -ss  > DRONESNP.snpeff.eff
-sed '/SYNONYMOUS/ !d' Capensis.snpeff.eff > exons.eff
-	#fixed ?/?
-sed '/WARNING/ !d' exons.eff > warnexons.eff
-sed '/WARNING/ d' exons.eff > exons1.eff
+#nsyn = read.table(file="/media/data1/forty3/drone/vcf_drone/exons1.eff",header=F,colClasses = rep("character", 17))
+nsyn =	merge(nsyn, PFST, by="SNP")
+intr = read.table(file="/media/data1/forty3/drone/vcf_drone/introns1.eff",header=F,colClasses = rep("character", 11))
+intr  = intr [c(1,2,8,11)];intr$SNP = paste(intr$V1,intr$V2,sep=":")	
+intr = merge(intr, PFST, by="SNP")
+#inter = read.table(file="/media/data1/forty3/drone/vcf_drone/intergen1.eff",header=F,colClasses = rep("character", 11))
+upstream = read.table(file="/media/data1/forty3/drone/vcf_drone/UPSTREAM1.eff", header=F,colClasses=rep("character",13))
+upstream = upstream[c(1,2,8,12)];upstream$SNP = paste(upstream$V1,upstream$V2,sep=":")	
+upstream = merge(upstream, PFST, by="SNP")
 
 
+names(upstream)[5] = names(intr)[5] = "type"	
+upstream$type = rep("UP",nrow(upstream))
+SNP = rbind(upstream, intr)	
+SNP = rbind(SNP,nsyn2)	
+	
+SNP.high = SNP[SNP$V8 %in% high.genes.perm.nsyn,]
+
+	
+
+nsyn[nsyn$V8 %in% high.genes.perm,]	
+	
+boxplot(intr$FST[intr$V8 %in% high.genes.perm], upstream$FST[upstream$V8 %in% high.genes.perm],nsyn$FST[nsyn$V8 %in% high.genes.perm]	, notch=T)
 
 
 
@@ -916,6 +1084,132 @@ aggregate(test$sig, by = list(test$Taxonomy), table)
 
 
 
+# Choosing SNPs -------------------------
+	#I'll test ~64 SNPs to see if they are significantly associated with hygiene in another population
+	#I'm going to compile a list of SNPs that are either:
+		#1 in QTL regions
+		#2 low P, but in clusters of low P
+		#3 Within genes....
+	#Take the overlapping set from this.
+		
+		
+		
+	#Low P genes:
+	sigFST = PFST[PFST$q < 0.01,]
+
+	#Within QTLs:
+	QTLSNPs = rbind(qtl.hyg1[which(qtl.hyg1$chrPOS > 86589 & qtl.hyg1$chrPOS < 145006),],
+	qtl.hyg2[which(qtl.hyg2$chrPOS > 527544 & qtl.hyg2$chrPOS < 1558442),],
+	qtl.hyg3.1[which(qtl.hyg3.1$chrPOS > 42885),],
+	qtl.hyg3.3[which(qtl.hyg3.3$chrPOS < 920721),] )
+	#694 SNPs total.
+
+		
+	#Within Genes?
+	Genic.Fst 
+	test = merge(Genic.Fst , QTLSNPs, by = "SNP")
+	
+	
+	# Genes with sign more high FST SNPs
+	high.genes.perm = as.character(sigFSTperm$GB[sigFSTperm$p<0.05]) 
+
+	#QTL genes with sig?
+	test = test[which(test$GB %in% high.genes.perm),] #54 SNPs
+	test = test[as.numeric(test$FST.x)>0.25,] #95% CI #40 SNPs
+		#take high in 5, it's right AT the QTL.
+	test$type = rep("QTL", nrow(test))
+	aggregate(test$POS.x, by = list(test$CHROM.x), function(x) mean(dist(x)))
+	
+
+
+	#Now add SNPs in high regions:
+	#CHR 6: 
+	plot(PFST$POS[PFST$CHROM=="6"], PFST$FST[PFST$CHROM=="6"])
+	abline(v=c(1000000,1500000),col="red")
+	test6 = PFST[which(PFST$CHROM=="6" & PFST$FST>0.5), ]
+	test6 = merge(test6, Genic.Fst, by = "SNP", all.x=T)
+	test6 = test6[which(as.numeric(test6$POS.x)>1000000 & as.numeric(test6$POS.x)<1500000),]
+	#GB45759 GB45760  are candidates....
+	test6$type = rep("highpeak6", nrow(test6))
+	
+	
+	#Now add SNPs in high regions:
+	#CHR 7: 
+	plot(PFST$POS[PFST$CHROM=="7"], PFST$FST[PFST$CHROM=="7"])
+	abline(v=c(10000000,11000000),col="red")
+	test7 = PFST[which(PFST$CHROM=="7" & PFST$FST>0.5), ] #108
+	test7 = merge(test7, Genic.Fst, by = "SNP", all.x=T)
+	test7 = test7[which(as.numeric(test7$POS.x)>10000000 & as.numeric(test7$POS.x)<11000000),]
+	#no genes here, but nearest to GB44276
+	test7 = test7[which(test7$FST.x>0.6),]
+	test7$type = rep("highpeak7", nrow(test7))
+	
+		# 7.22:1188961 0.633219       7 10653711 2.14335e-08 1.224916e-04    NA
+		#64 7.22:1220176 0.628921       7 10622496 1.14779e-09 6.288433e-05    NA
+
+
+	#Now add SNPs in high regions:
+	#CHR 11: 
+	plot(PFST$POS[PFST$CHROM=="11"], PFST$FST[PFST$CHROM=="11"])
+	abline(v=c(10000000,10500000),col="red")
+	test11 = PFST[which(PFST$CHROM=="11" & PFST$FST>0.5), ]
+	test11 = merge(test11, Genic.Fst, by = "SNP", all.x=T)
+	test11 = test11[which(as.numeric(test11$POS.x)>10000000 & as.numeric(test11$POS.x)<10500000),]
+	 #GB45055 and GB45053 
+	test11 = test11[which(test11$GB %in% high.genes.perm),] 
+	test11 = test11[test11$FST.x>0.55,]
+	test11$type = rep("highpeak11", nrow(test11))
+
+
+#Assemble these candidates	
+candidate.SNPs = rbind(test[c("SNP", "type")],test11[c("SNP", "type")],test6[c("SNP", "type")],test7[c("SNP", "type")] )
+
+test = candidate.SNPs
+test$chrom = gsub("[:].*","",test$SNP)
+test$pos = gsub(".*[:]","",test$SNP)
+write.list(test[c("chrom", "pos")], file="/media/data1/forty3/brock/align/candidateHYG")
+
+#Are any of these candidates found in previously-sequenced populations? 
+	#vcftools --vcf /media/data1/forty3/brock/align/ALL.het.indel.dpt.dd.bl.q.recode.vcf --maf 0.05 --positions /media/data1/forty3/brock/align/candidateHYG --recode --max-alleles 2
+	#261 SNPs in ancestral pops with maf>0.05, max allels <=2
+	
+	
+#Are these linked? 
+vcftools --vcf /media/data1/forty3/brock/align/out.recode.vcf --plink
+
+plink  --file out --indep-pairwise 100 5 0.2 --noweb
+#This generates the same output files as the first version; the only difference is that a simple pairwise threshold is used. The first two parameters (50 and 5) are the same as above (window size and step); the third parameter represents the r^2 threshold. Note: this represents the pairwise SNP-SNP metric now, not the multiple correlation coefficient; also note, this is based on the genotypic correlation, i.e. it does not involve phasing.
+
+#Independent SNPs (LD) that are found within AMCO (16 SNPs)
+	5.14:1068616#
+	5.14:1068931#choose one of the aboe
+	5.14:1548265
+	5.14:1549603
+	5.14:1551947
+	5.14:1554280# choose one
+	5.14:1554573#
+	6.2:353246
+	6.2:398843
+	6.2:522989
+	6.2:533017
+	11.18:1301870
+	11.18:1309608
+	11.18:1351575
+	16.4:46054
+	16.4:229744
+
+#SNPs I want included, but not found in ACMO	
+	7.22:1188961
+	7.22:1220176
+
+
+#random high FST SNPs:
+
+	
+	
+	
+	
+#I also want to choose some RFForest SNPs too...
 
 
 
@@ -944,27 +1238,79 @@ aggregate(test$sig, by = list(test$Taxonomy), table)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
 
 

@@ -18,6 +18,7 @@
 
 ##FST Analyses
 ###After Alignment, SNP calling, and trimming procedures (VCF Creation above)
+
 * Fst between selected (N=2 pops or N=1) and unselected using DroneCalculateFSTfromVCF.sh (copy and paste)
 
 * Run  MovingAveFSTfromPLINK.r <PLINK Fst> <WInsize> to create moving averages of FST along chromosomes (converted with updated perl script within R) saves an .RData file for next steps
@@ -36,6 +37,8 @@ e.g.
 save.image(file="/media/data1/forty3/drone/FST/SelvsCon/SelectedvsControlFSTPvals.RData")
 
 * I also ran [pFST](https://github.com/jewmanchue/vcflib/wiki/Association-testing-with-GPAT) using pFST.sh and added this to the previous dataframe of FST values. Then ran FDR using Storey's Q method. Significant FST was based on q<0.01 (or, -log10(P)>2.61). I did the same for AMC SNPs (same script)
+
+
 
 
 ##Admixture Analyses
@@ -78,6 +81,26 @@ grep -h CV log*.out
 <!---
 saved in HygieneHighFSTADMIXTURE.xlsx
 -->
+
+
+##Associations with Cochran-Mantel-Haenszel (CMH) tests with unphased data
+<pre><code>
+for K in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
+	do (plink --noweb --file DroneSamps_$K.UNphasedMAF --pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt --mh2 --within SELCONcluster.txt --out  CLUSTEREDUNPHMAF2_$K ) & 
+	done
+</code></pre> 
+
+
+
+##Associations with Permutation tests with unphased data
+<pre><code>
+for K in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
+	do (plink --noweb --file DroneSamps_$K.UNphasedMAF --pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt --assoc --perm --out PERMUNhap_$K ) & 
+	done
+</code></pre> 
+
+
+
 
 ##DEGs and QTLs
 There are lists of [DEGs](http://www.biomedcentral.com/1471-2164/16/500), [DEPs](http://www.biomedcentral.com/1471-2164/16/63), Some [GWAS](http://journals1.scholarsportal.info/pdf/1755098x/v12i0002/323_doa4sabihbmc.xml) and QTL papers ([1](http://onlinelibrary.wiley.com/doi/10.1111/j.1365-294X.2010.04569.x/full) and [2](http://link.springer.com/article/10.1007/s00114-002-0371-6#page-1)) available for hygienic behaviour. I pulled these data in to see if I've got evidence of significant FST SNPs within them. I would expect some within QTLs, but not necessarily any in DEGs. 
