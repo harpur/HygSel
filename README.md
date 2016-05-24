@@ -10,8 +10,8 @@
 
 
 ##VCF Creation:
-I aligned 2 different data sets. First, all Drones individually and second, I mereged drones into a single bam file where each merged file contained the ~3 drones sequenced per queen. I aligned with NGM (NGMDrone.sh), removed dupluicate reads and re-aligned around indels. SNPs and indels called with GATK (trimdrone.sh) and then trimmed based on quality measures (VCFQualityDepthFilter.r).
-I took the intersection set of both sets (Drone.Hap.recode.vcf)
+I aligned 2 different data sets. First, all Drones individually and second, I merged drones into a single bam file where each merged file contained the ~3 drones sequenced per queen. I aligned with NGM (<pre><code>NGMDrone.sh</code></pre>), removed duplicate reads and re-aligned around indels. SNPs and indels called with GATK (<pre><code>trimdrone.sh</code></pre>) and then trimmed based on quality measures (<pre><code>VCFQualityDepthFilter.r</code></pre>).
+I took the intersection set of both sets (<pre><code>Drone.Hap.recode.vcf</code></pre>)
 
 
 ##FST Analyses
