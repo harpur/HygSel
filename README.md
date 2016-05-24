@@ -62,7 +62,77 @@ Run again, but only for MAS against BM
 
 
 ###Output High FST regions and plots
-I munged the fst data using DroneFST.r. This script takes in the outputs above, merges them, creates unique SNP IDs, and processed it into NCBI chromosomes. The latter is performed by a perl script developed by Amro Zayed and slightly modified by me (scaffold_to_chr.pl). Once prociessed into chromosomes, I run a creeping window average across the genome in 5 kb windows using the [Qanbari et al. 2012](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0049525) approach from my own [scripts](https://github.com/harpur/GenomeR)
+I munged the fst data using DroneFST.r. This script takes in the outputs above, merges them, creates unique SNP IDs, and processed it into NCBI chromosomes. The latter is performed by a perl script developed by Amro Zayed and slightly modified by me (scaffold_to_chr.pl). Once prociessed into chromosomes, I run a creeping window average across the genome in 5 kb windows using the [Qanbari et al. 2012](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0049525) approach from my own [scripts](https://github.com/harpur/GenomeR). It outputs "ClusteredHighSNPsCreeper5kb", a list of high FST regions, and "RAWOUT.RData". 
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!--- 
+
+vcftools --vcf Drone.Hap.recode.vcf --keep /media/data1/forty3/drone/git/SelBees.txt --LROH --chr 6.2
+
+
+
+
+
+
+##DEGs and QTLs
+There are lists of [DEGs](http://www.biomedcentral.com/1471-2164/16/500), [DEPs](http://www.biomedcentral.com/1471-2164/16/63), Some [GWAS](http://journals1.scholarsportal.info/pdf/1755098x/v12i0002/323_doa4sabihbmc.xml) and QTL papers ([1](http://onlinelibrary.wiley.com/doi/10.1111/j.1365-294X.2010.04569.x/full) and [2](http://link.springer.com/article/10.1007/s00114-002-0371-6#page-1)) available for hygienic behaviour. I pulled these data in to see if I've got evidence of significant FST SNPs within them. I would expect some within QTLs, but not necessarily any in DEGs. 
+
+#### QTLs and GWAS
+I used Oxley's QTLs and mapped their location in AMEL4.5 by BLAST'ing the location of the nearest SNP within said QTL's peak LOD score. These are the best matches I could find using Solignac's marker set (scaffold:pos format).
+
+|	Amel4	|	Start	|	End	|
+|	-------------	|	:-------------:	|	-------------:	|
+|	hyg1	|	2.19:1245006	|	2.19:86589	|
+|	hyg2	|	5.14:527544	|	5.14:1558442	|
+|	hyg3	|	16.2:42885	|	16.4:920721	|
+
+
+For the "GWAS" I pulled Spotter's putative, unpublished QTLs from Table 1:
+
+|	LG	|	Start	|	End	|
+|	---------	|	:---------:	|	---------	|
+|	LG1	|	3039231	|	8453574	|
+|	LG1	|	9418717	|	16819942	|
+|	LG2	|	1	|	12503099	|
+|	LG6	|	11206828	|	17739083	|
+|	LG7	|	9515998	|	12848973	|
+|	LG12	|	1	|	4003353	|
+|	LG13	|	5247545	|	10266737	|
+|	LG15	|	1	|	6643609	|
+|	LG16	|	3196393	|	6242592	|
+
+	
+
+#### DEGs and DEPs
+LF kindly provided significant DEPs. I pulled Boutin's Tables 4 and 5. 
+With these lists I looked for genes with significant FST SNPs (HYGFSTAnalyses.r and boutinDEGs.r). I permuted SNPs across the genome for signiciance. 
+
+
+
+###GO Analysis
+I've focussed solely on significant FST genes for the time. I used GOstats (BostatsBEE.r) with a gene universe composed of fly orthologs to honey bee genes. For the first test, I used any-old gene with a significant SNP. For the second analysis, I used only genes with NSYN SNPs that had significantly more significant SNPs (that's fun to say) than expected by chance. My permutation procedure can be seen in HYGFSTAnalyses.r (~line 182). 
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -187,17 +257,17 @@ plink --file AMCHYGHIGH --noweb --make-bed --out AMCHYGHIGH
 /home/brock/admixture/admixture  --cv=10 AMCHYGHIGH.bed 3 -j2 | tee log3.out
 </code></pre>
 
-<!---
+
 for K in 1 2 3 4 5; \
 do /home/brock/admixture/admixture  --cv=10 AMCHYGHIGH.bed $K -j20 | tee log${K}.out; done
 grep -h CV log*.out
--->
+
 
 * I used this to look at differences in introgression between selected and control lines at significant SNPs
 
-<!---
+
 saved in HygieneHighFSTADMIXTURE.xlsx
--->
+
 
 ##Association Analysis
 
@@ -342,7 +412,7 @@ Check in HYGFSTAnalyses.r
 
 
 
-<!---
+
 
 ###Selection over longer time frames?
 I'm going to pull out the list of significant genes and see if they have evidence of selection over longer times within Apis (Gamma), and between populations (Pi, TD, Fst).
@@ -351,7 +421,7 @@ I'm going to pull out the list of significant genes and see if they have evidenc
 
 ###I'D LIKE TO TRY EXEHH http://hgdp.uchicago.edu/Software/
 
--->
+
 
 ###Plotting Data
 All FST plot scripts can be found as .r files
@@ -365,7 +435,7 @@ All FST plot scripts can be found as .r files
 * I may re-run Rcircos, see Rcircos_Drone.r
 
 
-
+--->
 
 
 
