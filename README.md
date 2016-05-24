@@ -10,8 +10,16 @@
 
 
 ##VCF Creation:
-I aligned 2 different data sets. First, all Drones individually and second, I merged drones into a single bam file where each merged file contained the ~3 drones sequenced per queen. I aligned with NGM (<pre><code>NGMDrone.sh</code></pre>), removed duplicate reads and re-aligned around indels. SNPs and indels called with GATK (<pre><code>trimdrone.sh</code></pre>) and then trimmed based on quality measures (<pre><code>VCFQualityDepthFilter.r</code></pre>).
-I took the intersection set of both sets (<pre><code>Drone.Hap.recode.vcf</code></pre>)
+I aligned 2 different data sets. First, all Drones individually and second, I merged drones into a single bam file where each merged file contained the ~3 drones sequenced per queen. Each fastq was trimmed with Trimmomatic v0.32 e.g:
+<pre><code>
+java -jar /usr/share/java/trimmomatic-0.32.jar PE -threads 30 -phred33 -trimlog 3870-3.trimlog 3870-3_R1.fastq 3870-3_R2.fastq 3870-3_R1_TP.fastq 3870-3_R1_TU.fastq 3870-3_R2_TP.fastq 3870-3_R2_TU.fastq LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36 &
+</code></pre>
+
+I next followed [GATK's Best Practices for Alignment](https://www.broadinstitute.org/gatk/guide/bp_step.php)  aligned with NGM (NGMDrone.sh), removed duplicate reads, and re-aligned around indels. 
+
+
+I hard-filtered sites within 10bp of indels and sites wityhin 5bp of putative CNVs (sites that were called hetero in my haploid drones). This was performed in (trimdrone.sh). This script also trims QD < 5.0 || FS > 40.0 || MQ < 25.0 and removes SNPs with outlier Depth and Quality scores (VCFQualityDepthFilter.r)
+
 
 
 ##FST Analyses
