@@ -8,6 +8,10 @@
 This project utilizes Illumina Sequence data from a selection experiment for hygienic behaviour. It selected bees for three generations using either a field assay for hygiene (called FAS population) or a metric of field assay and expression of marker proteins (called MAS population; see [Guarna et al. 2015](http://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-014-1193-6)). These populations were maintained along with a mase-line, unselected population (BM). Each bee's population-origin is listed in DroneSamps.txt
 
 
+To do:
+Most of this is still (guiltily) hard-coded, so I need to go through and generalize it. 
+
+
 ##VCF Creation:
 I aligned 2 different data sets. First, all Drones individually and second, I merged drones into a single bam file where each merged file contained the ~3 drones sequenced per queen. Each fastq was trimmed with Trimmomatic v0.32 e.g:
 <pre><code>java -jar /usr/share/java/trimmomatic-0.32.jar PE -threads 30 -phred33 -trimlog 3870-3.trimlog 3870-3_R1.fastq 3870-3_R2.fastq 3870-3_R1_TP.fastq 3870-3_R1_TU.fastq 3870-3_R2_TP.fastq 3870-3_R2_TU.fastq LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36 </code></pre>
@@ -57,10 +61,18 @@ Run again, but only for MAS against BM
 </code></pre>
 
 
-
-
 ###Output High FST regions and plots
-DroneFST.r
+I munged the fst data using DroneFST.r. This script takes in the outputs above, merges them, creates unique SNP IDs, and processed it into NCBI chromosomes. The latter is performed by a perl script developed by Amro Zayed and slightly modified by me (scaffold_to_chr.pl). Once prociessed into chromosomes, I run a creeping window average across the genome in 5 kb windows using the [Qanbari et al. 2012](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0049525) approach from my own (scripts)[https://github.com/harpur/GenomeR]
+
+
+
+
+
+
+
+
+
+
 
 
 ##Nucleotide Diversity and HWE
