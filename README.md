@@ -5,27 +5,21 @@
 
 
 
-
-
+This project utilizes Illumina Sequence data from a selection experiment for hygienic behaviour. It selected bees for three generations using either a field assay for hygiene (called FAS population) or a metric of field assay and expression of marker proteins (called MAS population; see [Guarna et al. 2015](http://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-014-1193-6)). These populations were maintained along with a mase-line, unselected population (BM). Each bee's population-origin is listed in DroneSamps.txt
 
 
 ##VCF Creation:
 I aligned 2 different data sets. First, all Drones individually and second, I merged drones into a single bam file where each merged file contained the ~3 drones sequenced per queen. Each fastq was trimmed with Trimmomatic v0.32 e.g:
-<pre><code>
-java -jar /usr/share/java/trimmomatic-0.32.jar PE -threads 30 -phred33 -trimlog 3870-3.trimlog 3870-3_R1.fastq 3870-3_R2.fastq 3870-3_R1_TP.fastq 3870-3_R1_TU.fastq 3870-3_R2_TP.fastq 3870-3_R2_TU.fastq LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36 &
-</code></pre>
-
-I next followed [GATK's Best Practices for Alignment](https://www.broadinstitute.org/gatk/guide/bp_step.php)  aligned with NGM (NGMDrone.sh), removed duplicate reads, and re-aligned around indels. 
-
-
-I hard-filtered sites within 10bp of indels and sites wityhin 5bp of putative CNVs (sites that were called hetero in my haploid drones). This was performed in (trimdrone.sh). This script also trims QD < 5.0 || FS > 40.0 || MQ < 25.0 and removes SNPs with outlier Depth and Quality scores (VCFQualityDepthFilter.r)
+<pre><code>java -jar /usr/share/java/trimmomatic-0.32.jar PE -threads 30 -phred33 -trimlog 3870-3.trimlog 3870-3_R1.fastq 3870-3_R2.fastq 3870-3_R1_TP.fastq 3870-3_R1_TU.fastq 3870-3_R2_TP.fastq 3870-3_R2_TU.fastq LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36 </code></pre>
+I next followed [GATK's Best Practices for Alignment](https://www.broadinstitute.org/gatk/guide/bp_step.php)  and aligned with NGM (NGMDrone.sh), removed duplicate reads, and re-aligned around indels. 
+I hard-filtered sites within 10bp of indels and sites within 5bp of putative CNVs (sites that were called hetero in my haploid drones). This was performed in (trimdrone.sh). This script also trims QD < 5.0 || FS > 40.0 || MQ < 25.0 and removes SNPs with outlier Depth and Quality scores (VCFQualityDepthFilter.r)
 
 
 
 ##FST Analyses
-###After Alignment, SNP calling, and trimming procedures (VCF Creation above)
-[//]: <> (cd /media/data1/forty3/drone/FST/pFST/vcflib/bin)
-Used [pFst and wcFst](https://github.com/jewmanchue/vcflib/wiki/Association-testing-with-GPAT)
+<!--- (cd /media/data1/forty3/drone/FST/pFST/vcflib/bin)-->
+Used [pFst and wcFst](https://github.com/jewmanchue/vcflib/wiki/Association-testing-with-GPAT) to estimate pairwise Fst and p-values between selected (pooled) and control:
+
 <pre><code>
 ./pFst --target 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,17,18,19,20,21,22,23,24,25,26,27,28 \
 	   --background 30,31,32,33,34,35,36,37,38,39,40 \
@@ -33,7 +27,6 @@ Used [pFst and wcFst](https://github.com/jewmanchue/vcflib/wiki/Association-test
 	   --file /media/data1/forty3/drone/vcf_drone/Drone.Hap.recode.vcf \
 	   --counts --type PL   > /media/data1/forty3/drone/FST/pFST/pFST.out
 </code></pre>
-
 
 <pre><code>
 ./wcFst --target 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28 \
@@ -43,8 +36,8 @@ Used [pFst and wcFst](https://github.com/jewmanchue/vcflib/wiki/Association-test
 	    >/media/data1/forty3/drone/FST/pFST/wcFST.out 
 </code></pre>
 
+I then re-ran the analysis with only FAS against BM 
 
-Run again, but only for FAS pop
 <pre><code>
 ./pFst --target 14,17,18,19,20,21,22,23,24,25,26,27,28 \
 	   --background 30,31,32,33,34,35,36,37,38,39,40 \
@@ -53,7 +46,8 @@ Run again, but only for FAS pop
 	   --counts --type PL   > /media/data1/forty3/drone/FST/pFST/pFST.FAS.out
 </code></pre>
 
-Run again, but only for MAS pop
+Run again, but only for MAS against BM
+
 <pre><code>
 ./pFst --target 0,1,2,3,4,5,6,7,8,9,10,11,12,13 \
 	   --background 30,31,32,33,34,35,36,37,38,39,40 \
@@ -61,6 +55,9 @@ Run again, but only for MAS pop
 	   --file /media/data1/forty3/drone/vcf_drone/Drone.Hap.recode.vcf \
 	   --counts --type PL   > /media/data1/forty3/drone/FST/pFST/pFST.MAS.out
 </code></pre>
+
+
+
 
 ###Output High FST regions and plots
 DroneFST.r
