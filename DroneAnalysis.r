@@ -22,12 +22,15 @@ library(data.table)
 source("/media/data1/forty3/drone/git/GenomeR/VarFunct.r")
 
 
-#Load Fst and Pi
+#Load Fst and Pi and GFF
 pfst.fas = read.table(file="/media/data1/forty3/drone/FST/pFST/pFST.FAS.out",header=F, colClasses = c("character", "numeric", "numeric"))
 pfst.mas = read.table(file="/media/data1/forty3/drone/FST/pFST/pFST.MAS.out",header=F, colClasses = c("character", "numeric", "numeric"))
 fst = read.table(file="/media/data1/forty3/drone/FST/pFST/wcFST.out",header=F, colClasses = c("character", "numeric", "numeric", "numeric"))
 pi = read.table(file="/media/data1/forty3/drone/vcf_drone/sel.windowed.pi",header=T, colClasses = c("character", "numeric", "numeric","numeric","numeric"))
+gff = read.table("/media/data1/forty3/R/GFF3_2",header=T, colClasses = c("character", "character", "numeric","numeric","character","character","character","character"))
 
+
+# Mung Data frames ------------------------------------------
 	
 #create SNP ID
 pfst.mas$SNP = paste(pfst.mas$V1, pfst.mas$V2, sep="_")
@@ -196,6 +199,59 @@ write.list(rang, file="ClusteredHighSNPsCreeper5kb")
 
 
 
+# Genes withing high FST regions ----------------------------------------
+#I'll pull geneswithin "rang"
+
+hi.Fst = c()
+chrom = intersect(rang$chrom, All.Data$CHROM)
+for(i in chrom){
+	win.temp = rang[rang$chrom==i,]
+	deg.temp = All.Data[which(as.character(All.Data$CHROM)==as.character(i)),]
+	blah=outer(as.numeric(deg.temp$POS), as.numeric(as.character(win.temp$start)), ">=") 
+	blah1=outer(as.numeric(deg.temp$POS), as.numeric(as.character(win.temp$end)), "<=") 
+	blah=(which(blah1=="TRUE" & blah=="TRUE", arr.ind=T)) #The gene region will be the colum variable
+	temp = deg.temp[blah[,1],]
+	temp = cbind(temp, win.temp[blah[,2],])
+	hi.Fst = rbind(temp,hi.Fst)
+	print(i)
+}
+
+regions = aggregate(GPOS~GRP+group2, data=hi.Fst, function(x) min(x))
+regions$end = aggregate(GPOS~GRP+group2, data=hi.Fst, function(x) max(x))$GPOS
+
+
+
+# Genes? ------------------------------------------------
+gff = gff[which(gff$type=="gene"),]
+gff$chrom = paste("Group", gff$chrom , sep="") 
+
+
+hi.genes = c()
+chrom = intersect(regions$GRP, gff$chrom)
+for(i in chrom){
+	win.temp = regions[regions$GRP==i,]
+	deg.temp = gff[which(as.character(gff$chrom)==as.character(i)),]
+	blah=outer(as.numeric(deg.temp$start), as.numeric(as.character(win.temp$end)), "<=") 
+	blah1=outer(as.numeric(deg.temp$end), as.numeric(as.character(win.temp$GPOS)), ">=") 
+	blah=(which(blah1=="TRUE" & blah=="TRUE", arr.ind=T)) #The gene region will be the colum variable
+	temp = deg.temp[blah[,1],]
+	temp = cbind(temp, win.temp[blah[,2],])
+	hi.genes = rbind(temp,hi.genes)
+	print(i)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Pi vs FST ----------------------------------------
 
@@ -212,15 +268,6 @@ for(i in chrom){
 	Pi.Fst = rbind(temp,Pi.Fst)
 	print(i)
 }
-
-
-
-
-
-
-
-
-
 
 
 
