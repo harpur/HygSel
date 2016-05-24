@@ -62,26 +62,21 @@ Run again, but only for MAS against BM
 
 
 ###Output High FST regions and plots
-I munged the fst data using DroneFST.r. This script takes in the outputs above, merges them, creates unique SNP IDs, and processed it into NCBI chromosomes. The latter is performed by a perl script developed by Amro Zayed and slightly modified by me (scaffold_to_chr.pl). Once prociessed into chromosomes, I run a creeping window average across the genome in 5 kb windows using the [Qanbari et al. 2012](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0049525) approach from my own [scripts](https://github.com/harpur/GenomeR). It outputs "ClusteredHighSNPsCreeper5kb", a list of high FST regions, and "RAWOUT.RData". 
+I munged the fst data using DroneAnalysis.r. This script takes in the outputs above, merges them, creates unique SNP IDs, and processed it into NCBI chromosomes. The latter is performed by a perl script developed by Amro Zayed and slightly modified by me (scaffold_to_chr.pl). Once prociessed into chromosomes, I run a creeping window average across the genome in 5 kb windows using the [Qanbari et al. 2012](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0049525) approach from my own [scripts](https://github.com/harpur/GenomeR). It outputs "ClusteredHighSNPsCreeper5kb", a list of high FST regions, and "RAWOUT.RData". 
 
 
 
+##Nucleotide Diversity and HWE
+I estimated nucleotide diversity with vcftoolsv0.1.11 
+<pre><code>
+vcftools --vcf Drone.Hap.recode.vcf --window-pi 5000 --keep SelBees.txt --out sel &
+</code></pre>
+
+might update this for LROH.....
 
 
-
-
-
-
-
-
-
-
-<!--- 
-
-vcftools --vcf Drone.Hap.recode.vcf --keep /media/data1/forty3/drone/git/SelBees.txt --LROH --chr 6.2
-
-
-
+##Analysis
+All is within DroneAnalysis.r
 
 
 
@@ -145,12 +140,6 @@ I've focussed solely on significant FST genes for the time. I used GOstats (Bost
 
 
 
-##Nucleotide Diversity and HWE
-<pre><code>
-vcftools --vcf Drone.Hap.recode.vcf --window-pi 5000 --keep SelBeesF.txt --out sel &
-</code></pre>
-
-DronePi.r
 
 
 
@@ -158,6 +147,8 @@ DronePi.r
 
 
 
+
+<!--- 
 
 
 
