@@ -119,20 +119,18 @@ To come
 
 
 
-
 ###Population identify 
+Here, I use the SNPs our group [previously identified](http://www.pnas.org/content/111/7/2614.abstract) in A, M, and C lineages and compare them to the selected populations to identify where the selected alleles originated from.
 
 1. Create tabix index for merging
-<pre><code>
-bgzip ALLSNP.recode.vcf
+<pre><code>bgzip ALLSNP.recode.vcf
 tabix -p vcf ALLSNP.recode.vcf.gz
 bgzip Drone.Hap.recode.vcf
 tabix -p vcf Drone.Hap.recode.vcf.gz
 </code></pre>
 
 2. Merge VCFs
-<pre><code>
-vcf-merge Drone.Hap.recode.vcf.gz /media/data1/forty3/brock/align/ALLSNP.recode.vcf.gz | bgzip -c > HYG.vcf.gz
+<pre><code>vcf-merge Drone.Hap.recode.vcf.gz /media/data1/forty3/brock/align/ALLSNP.recode.vcf.gz | bgzip -c > HYG.vcf.gz
 </code></pre>
 
 
