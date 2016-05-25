@@ -122,22 +122,18 @@ To come
 
 ###Population identify 
 
-
-
-
-# make VCF file of only SYN and NSYN SNPs -------------------------
-cut -f 1,2 exons.eff  > synnsyn.list 
-vcftools --vcf final.vcf --positions synnsyn.list --recode --out out.nsyn 
-
-#create tabix index for merging ----------------------------------
+1. Create tabix index for merging
+<pre><code>
 bgzip ALLSNP.recode.vcf
 tabix -p vcf ALLSNP.recode.vcf.gz
-
 bgzip Drone.Hap.recode.vcf
 tabix -p vcf Drone.Hap.recode.vcf.gz
+</code></pre>
 
+2. Merge VCFs
+<pre><code>
 vcf-merge Drone.Hap.recode.vcf.gz /media/data1/forty3/brock/align/ALLSNP.recode.vcf.gz | bgzip -c > HYG.vcf.gz
-
+</code></pre>
 
 
 
