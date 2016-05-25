@@ -84,15 +84,14 @@ pi$end = conv$V4
 All.Data = fst
 test = fst
 
-#identify high sites 
+#Identify High Sites with logP
 test$pMAS = -1*log10(test$pMAS)
 test$pFAS = -1*log10(test$pFAS)
 
+
 #Identify clusters of high FST regions
 	#used creeping window approach
-
-
-window.size = 5000 #size of window to be crept and gaps to skip, in BP 
+window.size = 1000 #size of window to be crept and gaps to skip, in BP 
 bin.size = 5 # minimum number of SNPs in a window (bin size, see plot)
 test = test[with(test, order(POS)),]
 
@@ -159,24 +158,23 @@ for(k in unique(test$CHROM)){
 
 }
 	
-save.image(file="RAWOUT.RData")
+save.image(file="RAWOUT1Kb.RData")
 creep.all = creep.all[which(complete.cases(creep.all$num_snps)),]
 
 
-
-
+#Trim creeper windos based on their number of SNPs 
 len = round(max(creep.all$num_snps)/10) 
 creep.all$bin <- as.numeric(cut2(creep.all$num_snps, g=len))
-#var.plot = aggregate(creep.all$Sp, by = list(creep.all$bin), function(x) sd(x, na.rm=T))
+#var.plot = aggregate(creep.all$pMAS, by = list(creep.all$bin), function(x) sd(x, na.rm=T))
 #plot(var.plot,pch=16)
 creeper = creep.all
-creeper=creeper[(creeper$bin >5),]
+creeper=creeper[(creeper$bin >3),]
 
 
 
 
 
-high = creeper[which(creeper$pMAS >2 & creeper$pFAS >2  ),] #or signi/1000
+high = creeper[which(creeper$pMAS >2.5 | creeper$pFAS >2.5  ),] #or signi/1000
 high$group2 = rep("NA", nrow(high))
 
 for(k in unique(high$chrom)){
@@ -193,7 +191,7 @@ rang$end = rang.1$end
 
 
 #made rang
-write.list(rang, file="ClusteredHighSNPsCreeper5kb")
+write.list(rang, file="ClusteredHighSNPsCreeper1kb")
 
 
 
@@ -243,18 +241,22 @@ for(i in chrom){
 
 
 
+#Overlap with DEGs? ----------------------------------------
+degs = read.table(file="/media/data1/forty3/drone/git/boutinDEGs.txt",header=T)
+degs[which(degs$GB %in% hi.genes$GB),]
+#3
 
 
-
-
-
+#Overlap with DEPs? ----------------------------------------
+deps = read.table(file="/media/data1/forty3/drone/git/FosterDeps.txt",header=T)
+deps[which(deps$GB %in% hi.genes$GB),]
+#none.
 
 
 
 
 
 # Pi vs FST ----------------------------------------
-
 Pi.Fst = c()
 chrom = intersect(rang$chrom, pi$CHROM)
 for(i in chrom){

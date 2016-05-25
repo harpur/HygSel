@@ -19,7 +19,6 @@ I next followed [GATK's Best Practices for Alignment](https://www.broadinstitute
 I hard-filtered sites within 10bp of indels and sites within 5bp of putative CNVs (sites that were called hetero in my haploid drones). This was performed in (trimdrone.sh). This script also trims QD < 5.0 || FS > 40.0 || MQ < 25.0 and removes SNPs with outlier Depth and Quality scores (VCFQualityDepthFilter.r)
 
 
-
 ##FST Analyses
 <!--- (cd /media/data1/forty3/drone/FST/pFST/vcflib/bin)-->
 Used [pFst and wcFst](https://github.com/jewmanchue/vcflib/wiki/Association-testing-with-GPAT) to estimate pairwise Fst and p-values between selected (pooled) and control:
@@ -62,17 +61,16 @@ Run again, but only for MAS against BM
 
 
 ###Output High FST regions and plots
-I munged the fst data using DroneAnalysis.r. This script takes in the outputs above, merges them, creates unique SNP IDs, and processed it into NCBI chromosomes. The latter is performed by a perl script developed by Amro Zayed and slightly modified by me (scaffold_to_chr.pl). Once prociessed into chromosomes, I run a creeping window average across the genome in 5 kb windows using the [Qanbari et al. 2012](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0049525) approach from my own [scripts](https://github.com/harpur/GenomeR). It outputs "ClusteredHighSNPsCreeper5kb", a list of high FST regions, and "RAWOUT.RData". 
+I munged the fst data using DroneAnalysis.r. This script takes in the outputs above, merges them, creates unique SNP IDs, and processed it into NCBI chromosomes. The latter is performed by a perl script developed by Amro Zayed and slightly modified by me (scaffold_to_chr.pl). Once prociessed into chromosomes, I run a creeping window average across the genome in 1 and 5 kb windows using the [Qanbari et al. 2012](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0049525) approach from my own [scripts](https://github.com/harpur/GenomeR). It outputs "ClusteredHighSNPsCreeper5kb", a list of high FST regions, and "RAWOUT.RData". 
 
 
 
-##Nucleotide Diversity and HWE
+##Nucleotide Diversity
 I estimated nucleotide diversity with vcftoolsv0.1.11 
 <pre><code>
-vcftools --vcf Drone.Hap.recode.vcf --window-pi 5000 --keep SelBees.txt --out sel &
+vcftools --vcf Drone.Hap.recode.vcf --window-pi 1000 --keep FASBees.txt --out sel &
 </code></pre>
 
-might update this for LROH.....
 
 
 ##Analysis
@@ -115,16 +113,30 @@ With these lists I looked for genes with significant FST SNPs (HYGFSTAnalyses.r 
 
 
 
+
 ###GO Analysis
-I've focussed solely on significant FST genes for the time. I used GOstats (BostatsBEE.r) with a gene universe composed of fly orthologs to honey bee genes. For the first test, I used any-old gene with a significant SNP. For the second analysis, I used only genes with NSYN SNPs that had significantly more significant SNPs (that's fun to say) than expected by chance. My permutation procedure can be seen in HYGFSTAnalyses.r (~line 182). 
+To come
 
 
 
 
+###Population identify 
 
 
 
 
+# make VCF file of only SYN and NSYN SNPs -------------------------
+cut -f 1,2 exons.eff  > synnsyn.list 
+vcftools --vcf final.vcf --positions synnsyn.list --recode --out out.nsyn 
+
+#create tabix index for merging ----------------------------------
+bgzip ALLSNP.recode.vcf
+tabix -p vcf ALLSNP.recode.vcf.gz
+
+bgzip Drone.Hap.recode.vcf
+tabix -p vcf Drone.Hap.recode.vcf.gz
+
+vcf-merge Drone.Hap.recode.vcf.gz /media/data1/forty3/brock/align/ALLSNP.recode.vcf.gz | bgzip -c > HYG.vcf.gz
 
 
 
@@ -153,6 +165,34 @@ I've focussed solely on significant FST genes for the time. I used GOstats (Bost
 
 
 
+
+
+
+
+might update this for LROH.....
+
+
+
+
+##Output PLINK format
+1. Convert to PLINK
+<pre><code>vcftools --vcf Drone.Hap.recode.vcf --recode --plink</code></pre>
+
+2. Convert scaff to chrom
+<pre><code>Rscript /media/data1/forty3/drone/git/ScaffMaptoChr.r out.map drone</code></pre>
+
+3. Re-order
+<pre><code>plink --noweb --file drone.chrom --recode  --out drone.chrom</code></pre> 
+
+4. Add Phenotype information
+<pre><code>
+cut -d " " -f1-6  drone.chrom.ped > first6
+cut -d " " -f1-6 --complement drone.chrom.ped > drone.ped
+paste -d " " first6 drone.ped > drone.test.ped 
+rm drone.chrom.ped
+rm drone.ped
+mv drone.test.ped drone.chrom.ped
+</code></pre> 
 
 
 
