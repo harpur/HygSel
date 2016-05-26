@@ -20,21 +20,23 @@ I next followed [GATK's Best Practices for Alignment](https://www.broadinstitute
 I hard-filtered sites within 10bp of indels and sites within 5bp of putative CNVs (sites that were called hetero in my haploid drones). This was performed in (trimdrone.sh). This script also trims QD < 5.0 || FS > 40.0 || MQ < 25.0 and removes SNPs with outlier Depth and Quality scores (VCFQualityDepthFilter.r)
 
 
-
 ##SNP Functional Classification
-java -jar /usr/local/lib/snpEff2/snpEff.jar Amel -o txt Drone.Hap.recode.vcf -no-downstream -no-upstream  > HYG.snpeff.eff
+I used SNPEFF to calssify mutations putative functional roles.
+<pre><code>java -jar /usr/local/lib/snpEff2/snpEff.jar Amel -o txt Drone.Hap.recode.vcf -no-downstream -no-upstream  > HYG.snpeff.eff</code></pre>
+	
+###Population identify 
+Here, I use the SNPs our group [previously identified](http://www.pnas.org/content/111/7/2614.abstract) in A, M, and C lineages and compare them to the selected populations to identify where the selected alleles originated from.
 
+1. Create tabix index for merging
+<pre><code>bgzip ALLSNP.recode.vcf
+tabix -p vcf ALLSNP.recode.vcf.gz
+bgzip Drone.Hap.recode.vcf
+tabix -p vcf Drone.Hap.recode.vcf.gz
+</code></pre>
 
-
-sed '/SYNONYMOUS/ !d' AFZ.snpeff.eff > exons.eff
-
-
-cd /media/data1/afz/SNPEFF
-#Run SNPEff
-
-	#Run on AfrSNPs.raw.vcf, it contains all SNPs 
-
-
+2. Merge VCFs
+<pre><code>vcf-merge Drone.Hap.recode.vcf.gz /media/data1/forty3/brock/align/ALLSNP.recode.vcf.gz | bgzip -c > HYG.vcf.gz
+HYG.vcf.gz</code></pre>
 
 
 
@@ -80,6 +82,19 @@ Run again, but only for MAS against BM
 	   --deltaaf 0.05 \
 	   --file /media/data1/forty3/drone/vcf_drone/Drone.Hap.recode.vcf \
 	   --counts --type PL   > /media/data1/forty3/drone/FST/pFST/pFST.MAS.out
+</code></pre>
+
+
+
+###Fst between Lineages and SEL/CON
+To get an idea of where the alleles came from (kind of), I'm using FST between the major lineages
+<pre><code>
+vcftools --vcf HYG.vcf --weir-fst-pop /media/data1/forty3/drone/git/m.txt --weir-fst-pop /media/data1/forty3/drone/git/SEL.txt --maf 0.05 --out M_vs_SEL
+vcftools --vcf HYG.vcf --weir-fst-pop /media/data1/forty3/drone/git/c.txt --weir-fst-pop /media/data1/forty3/drone/git/SEL.txt --maf 0.05  --out C_vs_SEL
+vcftools --vcf HYG.vcf --weir-fst-pop /media/data1/forty3/drone/git/s.txt --weir-fst-pop /media/data1/forty3/drone/git/SEL.txt --maf 0.05  --out A_vs_SEL
+vcftools --vcf HYG.vcf --weir-fst-pop /media/data1/forty3/drone/git/m.txt --weir-fst-pop /media/data1/forty3/drone/git/CONT.txt --maf 0.05  --out M_vs_CONT
+vcftools --vcf HYG.vcf --weir-fst-pop /media/data1/forty3/drone/git/c.txt --weir-fst-pop /media/data1/forty3/drone/git/CONT.txt --maf 0.05  --out C_vs_CONT
+vcftools --vcf HYG.vcf --weir-fst-pop /media/data1/forty3/drone/git/s.txt --weir-fst-pop /media/data1/forty3/drone/git/CONT.txt --maf 0.05  --out A_vs_CONT
 </code></pre>
 
 
@@ -142,19 +157,6 @@ To come
 
 
 
-###Population identify 
-Here, I use the SNPs our group [previously identified](http://www.pnas.org/content/111/7/2614.abstract) in A, M, and C lineages and compare them to the selected populations to identify where the selected alleles originated from.
-
-1. Create tabix index for merging
-<pre><code>bgzip ALLSNP.recode.vcf
-tabix -p vcf ALLSNP.recode.vcf.gz
-bgzip Drone.Hap.recode.vcf
-tabix -p vcf Drone.Hap.recode.vcf.gz
-</code></pre>
-
-2. Merge VCFs
-<pre><code>vcf-merge Drone.Hap.recode.vcf.gz /media/data1/forty3/brock/align/ALLSNP.recode.vcf.gz | bgzip -c > HYG.vcf.gz
-</code></pre>
 
 
 
