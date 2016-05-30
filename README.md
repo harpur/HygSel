@@ -41,9 +41,6 @@ HYG.vcf.gz</code></pre>
 
 
 
-
-
-
 ##FST Analyses
 <!--- (cd /media/data1/forty3/drone/FST/pFST/vcflib/bin)-->
 Used [pFst and wcFst](https://github.com/jewmanchue/vcflib/wiki/Association-testing-with-GPAT) to estimate pairwise Fst and p-values between selected (pooled) and control:
@@ -89,13 +86,14 @@ Run again, but only for MAS against BM
 ###Fst between Lineages and SEL/CON
 To get an idea of where the alleles came from (kind of), I'm using FST between the major lineages
 <pre><code>
-vcftools --vcf HYG.vcf --weir-fst-pop /media/data1/forty3/drone/git/m.txt --weir-fst-pop /media/data1/forty3/drone/git/SEL.txt --maf 0.05 --out M_vs_SEL
-vcftools --vcf HYG.vcf --weir-fst-pop /media/data1/forty3/drone/git/c.txt --weir-fst-pop /media/data1/forty3/drone/git/SEL.txt --maf 0.05  --out C_vs_SEL
-vcftools --vcf HYG.vcf --weir-fst-pop /media/data1/forty3/drone/git/s.txt --weir-fst-pop /media/data1/forty3/drone/git/SEL.txt --maf 0.05  --out A_vs_SEL
-vcftools --vcf HYG.vcf --weir-fst-pop /media/data1/forty3/drone/git/m.txt --weir-fst-pop /media/data1/forty3/drone/git/CONT.txt --maf 0.05  --out M_vs_CONT
-vcftools --vcf HYG.vcf --weir-fst-pop /media/data1/forty3/drone/git/c.txt --weir-fst-pop /media/data1/forty3/drone/git/CONT.txt --maf 0.05  --out C_vs_CONT
-vcftools --vcf HYG.vcf --weir-fst-pop /media/data1/forty3/drone/git/s.txt --weir-fst-pop /media/data1/forty3/drone/git/CONT.txt --maf 0.05  --out A_vs_CONT
+vcftools --vcf HYG.vcf --weir-fst-pop /media/data1/forty3/drone/git/data/m.txt --weir-fst-pop /media/data1/forty3/drone/git/data/SEL.txt --maf 0.05 --out M_vs_SEL
+vcftools --vcf HYG.vcf --weir-fst-pop /media/data1/forty3/drone/git/data/c.txt --weir-fst-pop /media/data1/forty3/drone/git/data/SEL.txt --maf 0.05  --out C_vs_SEL
+vcftools --vcf HYG.vcf --weir-fst-pop /media/data1/forty3/drone/git/data/s.txt --weir-fst-pop /media/data1/forty3/drone/git/data/SEL.txt --maf 0.05  --out A_vs_SEL
+vcftools --vcf HYG.vcf --weir-fst-pop /media/data1/forty3/drone/git/data/m.txt --weir-fst-pop /media/data1/forty3/drone/git/data/CONT.txt --maf 0.05  --out M_vs_CONT
+vcftools --vcf HYG.vcf --weir-fst-pop /media/data1/forty3/drone/git/data/c.txt --weir-fst-pop /media/data1/forty3/drone/git/data/CONT.txt --maf 0.05  --out C_vs_CONT
+vcftools --vcf HYG.vcf --weir-fst-pop /media/data1/forty3/drone/git/data/s.txt --weir-fst-pop /media/data1/forty3/drone/git/data/CONT.txt --maf 0.05  --out A_vs_CONT
 </code></pre>
+
 
 
 ###Output High FST regions and plots
@@ -111,9 +109,19 @@ vcftools --vcf Drone.Hap.recode.vcf --window-pi 1000 --keep FASBees.txt --out se
 
 
 
+##Extract high SNPs and characterize
+"high.bed" contains all SNPs in AND codition for 1kb windows. Using this, I extracted the SNPs from my VCF file
+<pre><code>
+vcftools --vcf Drone.Hap.recode.vcf --bed high.bed --recode --out high
+java -jar /usr/local/lib/snpEff2/snpEff.jar Amel -o txt high.recode.vcf -no-downstream -no-upstream  > HYG.high.snpeff.eff
+
+</code></pre>
+
+
+
 ##Analysis
 All is within DroneAnalysis.r
-
+All analyses saved in "Hygiene.RData"
 
 
 ##DEGs and QTLs
@@ -157,10 +165,12 @@ To come
 
 
 
+###TRN Analysis
 
 
 
 
+###Gene Age
 
 
 

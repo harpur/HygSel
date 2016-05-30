@@ -1,0 +1,47 @@
+
+
+
+
+
+
+
+
+# Hygiene Results -------------------
+
+A) Evidence of Selection: Fst and Creeper
+	no. sites
+	no. regions
+	size of regions
+	genes in regions
+	
+	
+	#I'd like to include the AF bit. perhaps AF as major control vs minor
+	
+B) Admxiture
+	From Drone Analysis and DronePlots.r
+	
+	Across the entuire genome, on average both selected and control bees have the same ancestry (C=M), but at sites acted on by selection, Selected bees seem to have purged C lineage ancestry and increased M (but NOT A) lineage ancestry 
+	
+	
+			#	pop      mean         sem     lower     upper
+		#1  Control 0.5197341 0.010042511 0.5096916 0.5297766
+		#2 Selected 0.1808861 0.007110976 0.1737751 0.1879970
+        #
+        #
+		#   pop      mean          sem     lower     upper
+		#1  Control 0.2048185 0.0003130694 0.2045054 0.2051316
+		#2 Selected 0.1893159 0.0002877236 0.1890282 0.1896036
+		
+	
+	This implies that the alleles underpinning hygiene originated or are most closely related to C lineage bees. There is limited evidenc that these bees are the most hygiene, so subspecies comparisons need to come soon. #Interesting bump at 50%? He effects?
+	
+	
+C) Genes and gene networks, etc.
+
+	THough few genes, No evidene of expression bias, some bias towards being old, no or very little overlap with known DEGs and DEPs. 
+	
+	#involved in TRN/BeeSpace? 
+	
+	The genes are THESE
+	
+	There are NSYN changes to THIS MANY and have high FST. As well as indels. 
