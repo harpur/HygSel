@@ -87,8 +87,8 @@ pi$end = conv$V4
 
 
 # Analyses -----------------------------
-All.Data = fst
-test = fst
+#All.Data = fst
+test = All.Data
 
 #Identify High Sites with logP
 test$pMAS = -1*log10(test$pMAS)
@@ -108,7 +108,7 @@ for(k in unique(test$CHROM)){
 	snp = as.numeric(test$POS[test$CHROM==k])
 	fst = as.numeric(test$pMAS[test$CHROM==k]) 
 	fst2 = as.numeric(test$pFAS[test$CHROM==k])
-	fst3 = as.numeric(test$FST[test$CHROM==k]) 	
+	fst3 = as.numeric(test$FSTP[test$CHROM==k]) 	
 	#Pc = as.numeric(test$P[test$CHROM==k]) 
 	#dp = as.numeric(test$MEAN_DEPTH[test$CHROM==k]) 
 	
@@ -185,7 +185,7 @@ creeper=creeper[(creeper$bin >3),]
 
 
 
-high = creeper[which(creeper$pMAS >2.5 & creeper$pFAS >2.5  ),] #or signi/1000
+high = creeper[which(creeper$pMAS > 2.5 & creeper$pFAS >2.5  ),] #or signi/1000
 high$group2 = rep("NA", nrow(high))
 
 for(k in unique(high$chrom)){
