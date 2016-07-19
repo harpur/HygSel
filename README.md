@@ -40,7 +40,6 @@ HYG.vcf.gz</code></pre>
 
 
 
-
 ##FST Analyses
 <!--- (cd /media/data1/forty3/drone/FST/pFST/vcflib/bin)-->
 Used [pFst and wcFst](https://github.com/jewmanchue/vcflib/wiki/Association-testing-with-GPAT) to estimate pairwise Fst and p-values between selected (pooled) and control:
@@ -92,21 +91,26 @@ vcftools --vcf HYG.vcf --weir-fst-pop /media/data1/forty3/drone/git/data/s.txt -
 vcftools --vcf HYG.vcf --weir-fst-pop /media/data1/forty3/drone/git/data/m.txt --weir-fst-pop /media/data1/forty3/drone/git/data/CONT.txt --maf 0.05  --out M_vs_CONT
 vcftools --vcf HYG.vcf --weir-fst-pop /media/data1/forty3/drone/git/data/c.txt --weir-fst-pop /media/data1/forty3/drone/git/data/CONT.txt --maf 0.05  --out C_vs_CONT
 vcftools --vcf HYG.vcf --weir-fst-pop /media/data1/forty3/drone/git/data/s.txt --weir-fst-pop /media/data1/forty3/drone/git/data/CONT.txt --maf 0.05  --out A_vs_CONT
+vcftools --vcf HYG.vcf --weir-fst-pop /media/data1/forty3/drone/git/data/m.txt --weir-fst-pop /media/data1/forty3/drone/git/data/c.txt --maf 0.05  --out M_vs_C
+vcftools --vcf HYG.vcf --weir-fst-pop /media/data1/forty3/drone/git/data/s.txt --weir-fst-pop /media/data1/forty3/drone/git/data/c.txt --maf 0.05  --out A_vs_C
+vcftools --vcf HYG.vcf --weir-fst-pop /media/data1/forty3/drone/git/data/m.txt --weir-fst-pop /media/data1/forty3/drone/git/data/s.txt --maf 0.05  --out M_vs_A
+vcftools --vcf HYG.vcf --keep /media/data1/forty3/drone/git/data/m.txt --TajimaD 1000 --maf 0.05  --out M
+vcftools --vcf HYG.vcf --keep /media/data1/forty3/drone/git/data/c.txt --TajimaD 1000 --maf 0.05  --out C
+vcftools --vcf /media/data1/forty3/brock/align/N.raw.vcf  --TajimaD 1000 --maf 0.05  --out N
 </code></pre>
-
 
 
 ###Output High FST regions and plots
 I munged the fst data using DroneAnalysis.r. This script takes in the outputs above, merges them, creates unique SNP IDs, and processed it into NCBI chromosomes. The latter is performed by a perl script developed by Amro Zayed and slightly modified by me (scaffold_to_chr.pl). Once prociessed into chromosomes, I run a creeping window average across the genome in 1 and 5 kb windows using the [Qanbari et al. 2012](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0049525) approach from my own [scripts](https://github.com/harpur/GenomeR). It outputs "ClusteredHighSNPsCreeper5kb", a list of high FST regions, and "RAWOUT.RData". 
 
 
-
-##Nucleotide Diversity
+##Nucleotide Diversity and HWE
 I estimated nucleotide diversity with vcftoolsv0.1.11 
 <pre><code>
-vcftools --vcf Drone.Hap.recode.vcf --window-pi 1000 --keep FASBees.txt --out sel &
-</code></pre>
+vcftools --vcf Drone.Hap.recode.vcf --TajimaD 1000 --keep /media/data1/forty3/drone/git/data/FASBees.txt --out sel &
 
+vcftools --vcf Drone.Hap.recode.vcf --hardy --keep /media/data1/forty3/drone/git/data/FASBees.txt --out sel
+</code></pre>
 
 
 ##Extract high SNPs and characterize
@@ -117,7 +121,7 @@ java -jar /usr/local/lib/snpEff2/snpEff.jar Amel -o txt high.recode.vcf -no-down
 
 </code></pre>
 
-
+I characterized SNPs within high windows, high snps (FSTP >  4) relative to all SNPs within the genome. I used -ud 5000 
 
 ##Analysis
 All is within DroneAnalysis.r
@@ -159,6 +163,51 @@ With these lists I looked for genes with significant FST SNPs (HYGFSTAnalyses.r 
 
 
 
+####Admixture Analysis
+
+vcftools --vcf HYG.vcf --plink --remove /media/data1/forty3/drone/git/data/o.txt
+plink --file out --noweb --thin 0.25 --maf 0.05 --make-bed 
+
+for K in 1 2 3 4 5 ; \
+do /home/brock/admixture/admixture  --cv=20 plink.bed $K -j12 | tee log${K}.out; done
+grep -h CV log*.out 
+
+for K in 4 ; \
+do /home/brock/admixture/admixture  --cv=20 plink.bed $K -j12 | tee log${K}.out; done
+mv plink.4.Q plink.4.Q.wholegenome
+
+#trying now with O
+
+
+vcftools --vcf HYG.vcf --bed highregions.bed --plink  --out HYGHIGHHAPS #--remove /media/data1/forty3/drone/git/data/o.txt
+plink --file HYGHIGHHAPS --noweb  --make-bed 
+
+
+for K in 4 ; \
+do /home/brock/admixture/admixture  --cv=20 plink.bed $K -j7 | tee log${K}.out; done
+mv plink.4.Q plink.4.Q.selectedsites
+
+
+
+#testing with highest sites and NO A 
+
+vcftools --vcf HYG.vcf --bed VERYhigh.bed --plink  --out VHYGHIGHHAPS --remove /media/data1/forty3/drone/git/data/o.txt --remove /media/data1/forty3/drone/git/data/s.txt
+plink --file VHYGHIGHHAPS --noweb  --make-bed 
+
+
+for K in 2 ; \
+do /home/brock/admixture/admixture  --cv=20 plink.bed $K -j7 | tee log${K}.out; done
+mv plink.2.Q plink.2.Q.Vselectedsites
+
+
+
+
+
+
+
+
+
+
 
 ###GO Analysis
 To come
@@ -195,10 +244,162 @@ To come
 
 
 
+#### GWAS 
+I've stopped this analysis because I lack the power to perform GWAS associations
+Using SNPs within the highest clusters, I ran 2 GWAS statistics to see if there is an association between genotype and phenotype. The samples we have are stratified, so I controlled for this by using [Permutation and a CMH test](http://pngu.mgh.harvard.edu/~purcell/plink/anal.shtml). The permutation used the quantitative phenotype and then CMH used a categorical case-control where case was defined as having >80% hygiene.
+
+#####File Creation
+1. Create PED and MAP files
+<pre><code>cd /media/data1/forty3/drone/vcf_drone</code></pre>
+<pre><code>vcftools --vcf HYG.vcf --plink --vcf HYG.vcf --bed VERYhigh.bed --out AllSample</code></pre>
+
+2. Convert scaff to chrom
+<pre><code>Rscript /media/data1/forty3/drone/git/ScaffMaptoChr.r AllSample.map</code></pre>
+
+3. Re-order
+<pre><code>plink --noweb --file AllSample --recode  --out AllSamplere</code></pre>
+
+
+4. Trim out based on r
+<pre><code>plink --noweb --file AllSamplere --indep-pairwise 50 5 0.5 </code></pre> 
+<pre><code>plink --noweb \
+	--file AllSamplere   \
+	--extract plink.prune.in \
+	--recode \
+	--out AllSamplereINDEP
+</code></pre> 
+
+
+
+#####Association
+
+<pre><code>plink --noweb --file AllSamplereINDEP --pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHBcat.txt --mh2 --within SELCONcluster.txt --out  CLUSTEREDUNPCAT </code></pre>
+
+<pre><code>plink --noweb --file  AllSamplereINDEP --pheno /media/data1/forty3/drone/vcf_drone/DronePhenoHB.txt --assoc --adjust --perm --out PERMUN </code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+load(file="HYGRESULTS_FIGS.RDATA")
+
+
+con = read.table(file="/media/data1/forty3/drone/vcf_drone/con.hwe",header=T, colClasses = c("character", "numeric", "character","character","numeric","numeric"))
+sel = read.table(file="/media/data1/forty3/drone/vcf_drone/sel.hwe",header=T, colClasses = c("character", "numeric", "character","character","numeric","numeric"))
+
+sel = con
+sel$SNP = paste(sel$CHR, sel$POS, sep="_")
+sel$GRP = paste("Group", sel$CHR, sep="")
+
+
+
+
+# Pi vs FST ----------------------------------------
+Pi.Fst = c()
+chrom = intersect(regions$GRP, sel$GRP)
+for(i in chrom){
+	win.temp = regions[regions$GRP==i,]
+	deg.temp = sel[which(as.character(sel$GRP)==as.character(i)),]
+	blah=outer(as.numeric(deg.temp$POS), as.numeric(as.character(win.temp$GPOS)), ">=") 
+	blah1=outer(as.numeric(deg.temp$POS), as.numeric(as.character(win.temp$end)), "<=") 
+	blah=(which(blah1=="TRUE" & blah=="TRUE", arr.ind=T)) #The gene region will be the colum variable
+	temp = deg.temp[blah[,1],]
+	temp = cbind(temp, win.temp[blah[,2],])
+	Pi.Fst = rbind(temp,Pi.Fst)
+	print(i)
+}
+
+
+Pi.Fst[Pi.Fst$GRP=="Group6.2",]
+
+
+
+
+6.2 479112              3/5/3   2.75/5.50/2.75 0.090909 1.000000
+284019 6.2 480028              2/3/6   1.11/4.77/5.11 1.517551 0.232198
+284020 6.2 480220              1/4/6   0.82/4.36/5.82 0.076389 1.000000
+284021 6.2 480238   
+
+CHR	POS	OBS(HOM1/HET/HOM2)	E(HOM1/HET/HOM2)	ChiSq	P
+1.1	838	10/1/0	10.02/0.95/0.02	0.024943	1.000000
+1.1	940	10/1/0	10.02/0.95/0.02	0.024943	1.000000
 
 
 
 might update this for LROH.....
+
+
+#proportion of homoz. in each region?
+
+
+
+hom1 = as.numeric(gsub("[/]","",substr(Pi.Fst$OBS.HOM1.HET.HOM2.,1,2)))
+hom2 = as.numeric(gsub("[/]","",substr(Pi.Fst$OBS.HOM1.HET.HOM2.,5, nchar(Pi.Fst$OBS.HOM1.HET.HOM2.))))
+
+hom.prop = hom1 + hom2
+
+#SEL:
+length(hom.prop[hom.prop>20]) #(707;0.91)
+
+#sel all genome:
+
+sel = sel[which(!(sel$GRP %in% regions$GRP)),]
+
+hom1 = as.numeric(gsub("[/]","",substr(sel$OBS.HOM1.HET.HOM2.,1,2)))
+hom2 = as.numeric(gsub("[/]","",substr(sel$OBS.HOM1.HET.HOM2.,5, nchar(sel$OBS.HOM1.HET.HOM2.))))
+
+hom.prop = hom1 + hom2
+
+length(hom.prop[hom.prop>20]) #(707;0.91)
+
+
+#CON
+length(hom.prop[hom.prop>8]) #656
+
+
+	Outcome 1	Outcome 2	     Total
+Group 1	707	67	774
+Group 2	656	118	774
+Total	1363	185	1548
+Fisher's exact test
+  The two-tailed P value is less than 0.0001
+
+  more homozygous loci in these regions.
+
+
+substr(Pi.Fst$OBS.HOM1.HET.HOM2.,1, -3)
+
+
+
+Pi.Fst = c()
+chrom = intersect(regions$GRP, sel$GRP)
+for(i in chrom){
+	win.temp = regions[regions$GRP==i,]
+	deg.temp = sel[which(as.character(sel$GRP)==as.character(i)),]
+	blah=outer(as.numeric(deg.temp$POS), as.numeric(as.character(win.temp$GPOS)), "<=") 
+	blah1=outer(as.numeric(deg.temp$POS), as.numeric(as.character(win.temp$end)), ">=") 
+	blah=(which(blah1=="TRUE" & blah=="TRUE", arr.ind=T)) #The gene region will be the colum variable
+	temp = deg.temp[blah[,1],]
+	temp = cbind(temp, win.temp[blah[,2],])
+	Pi.Fst = rbind(temp,Pi.Fst)
+	print(i)
+}
+
+
+
+
 
 
 

@@ -15,10 +15,12 @@ system(paste("vcftools --vcf ",fil,"--site-quality", sep=" "))
 
 #get max and min depth values ---------------------
 depth=read.table(file="out.ldepth.mean",header=T)
+depth = depth[complete.cases(depth$MEAN_DEPTH),]
 maxdp = 1.5*IQR(depth$MEAN_DEPTH)+quantile(depth$MEAN_DEPTH,0.75) #max depth outlier 
 mindp = quantile(depth$MEAN_DEPTH,0.25)-1.5*IQR(depth$MEAN_DEPTH) #min depth outlier
 
 qual=read.table(file="out.lqual",header=T)
+qual = qual[complete.cases(qual$QUAL),]
 maxq = 1.5*IQR(qual$QUAL)+quantile(qual$QUAL,0.75) #max qual outlier 
 minq = quantile(qual$QUAL,0.05) #min qual outlier
 qual = qual[which(qual$QUAL< minq | qual$QUAL > maxq),]	
