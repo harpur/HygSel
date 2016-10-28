@@ -27,6 +27,8 @@ pfst = read.table(file="/media/data1/forty3/drone/FST/pFST/pFST.out",header=F, c
 pfst.fas = read.table(file="/media/data1/forty3/drone/FST/pFST/pFST.FAS.out",header=F, colClasses = c("character", "numeric", "numeric"))
 pfst.mas = read.table(file="/media/data1/forty3/drone/FST/pFST/pFST.MAS.out",header=F, colClasses = c("character", "numeric", "numeric"))
 fst = read.table(file="/media/data1/forty3/drone/FST/pFST/wcFST.out",header=F, colClasses = c("character", "numeric", "numeric", "numeric"))
+selv = read.table(file="/media/data1/forty3/drone/FST/pFST/pFST.SEL",header=F, colClasses = c("character", "numeric", "numeric", "numeric"))
+
 pi = read.table(file="/media/data1/forty3/drone/vcf_drone/sel.Tajima.D",header=T, colClasses = c("character", "numeric","numeric","numeric"))
 gff = read.table("/media/data1/forty3/R/GFF3_2",header=T, colClasses = c("character", "character", "numeric","numeric","character","character","character","character"))
 
@@ -39,6 +41,7 @@ pfst.mas$SNP = paste(pfst.mas$V1, pfst.mas$V2, sep="_")
 pfst.fas$SNP = paste(pfst.fas$V1, pfst.fas$V2, sep="_")
 fst$SNP = paste(fst$V1, fst$V2, sep="_")
 pi$SNP = paste(pi$CHROM, pi$BIN_START, sep="_")
+selv$SNP = paste(selv$V1, selv$V2, sep="_")
 
 #create scaff ID
 fst$V1 = paste("Group", fst$V1, sep="")
@@ -46,6 +49,9 @@ pfst$V1 = paste("Group", pfst$V1, sep="")
 pfst.mas$V1 = paste("Group", pfst.mas$V1, sep="")
 pfst.fas$V1 = paste("Group", pfst.fas$V1, sep="")
 pi$GRP = paste("Group", pi$CHROM, sep="")
+selv$GRP = paste("Group", selv$V1, sep="")
+
+
 
 #merge
 pfst.mas= pfst.mas[c(3,4)];names(pfst.mas)[1] = "pMAS"
@@ -60,9 +66,10 @@ pfst = data.table(pfst)
 fst = merge(fst, pfst.mas, by="SNP")
 fst = merge(fst, pfst.fas, by="SNP")
 fst = merge(fst, pfst, by="SNP")
+fst = merge(fst, selv, by="SNP")
 fst = data.frame(fst)
 
-fst = fst[c(1,2,3,6,7,8,9)]; names(fst) = c("SNP","GRP","GPOS","FST","pMAS", "pFAS", "FSTP")
+fst = fst[c(1,2,3,6,7,8,9, 14)]; names(fst) = c("SNP","GRP","GPOS","FST","pMAS", "pFAS", "FSTP", "FSTSEL")
 
 
 #convert scaffold to chromosome
@@ -95,6 +102,14 @@ test$pMAS = -1*log10(test$pMAS)
 test$pFAS = -1*log10(test$pFAS)
 test$FSTP = -1*log10(test$FSTP)
 
+FST = as.numeric(test$FST)
+FST[FST < 0] = 0
+test$FST = FST
+
+FST = as.numeric(test$FSTSEL)
+FST[FST < 0] = 0
+test$FSTSEL = FST
+
 #Identify clusters of high FST regions
 	#used creeping window approach
 window.size = 1000 #size of window to be crept and gaps to skip, in BP 
@@ -109,6 +124,8 @@ for(k in unique(test$CHROM)){
 	fst = as.numeric(test$pMAS[test$CHROM==k]) 
 	fst2 = as.numeric(test$pFAS[test$CHROM==k])
 	fst3 = as.numeric(test$FSTP[test$CHROM==k]) 	
+	fst4 = as.numeric(test$FSTSEL[test$CHROM==k]) 
+	fst5 = as.numeric(test$FST[test$CHROM==k]) 
 	#Pc = as.numeric(test$P[test$CHROM==k]) 
 	#dp = as.numeric(test$MEAN_DEPTH[test$CHROM==k]) 
 	
@@ -129,7 +146,8 @@ for(k in unique(test$CHROM)){
 	vec2=rep(0,n)
 	vec3=rep(0,n)
 	vec4=rep(0,n)
-		
+	vec5=rep(0,n)
+	
 	len=rep(0,n)
 	end=rep(0,n)
 	
@@ -146,6 +164,12 @@ for(k in unique(test$CHROM)){
 				fst_mean=mean(fst3[i:endsnp[i]])
 				vec3[i]=fst_mean					
 
+				fst_mean=mean(fst4[i:endsnp[i]])
+				vec4[i]=fst_mean
+				
+				fst_mean=mean(fst5[i:endsnp[i]])
+				vec5[i]=fst_mean
+				
 				
 				len[i]=snp_len
 				end[i]=(snp[endsnp[i]])
@@ -161,15 +185,15 @@ for(k in unique(test$CHROM)){
 }
 
 
-	creeper = data.frame(cbind(vec, vec2, vec3, len, snp, end))
+	creeper = data.frame(cbind(vec, vec2, vec3, vec4, vec5, len, snp, end))
 	creeper$CHROM = rep(k, nrow(creeper))
-	names(creeper)=c("pMAS","pFAS","FSTP", "num_snps", "start", "end","chrom")
+	names(creeper)=c("pMAS","pFAS","FSTP","FSTSEL","FST", "num_snps", "start", "end","chrom")
 	creep.all = rbind(creep.all, creeper)
 
 
 }
 	
-save.image(file="RAWOUT1KbtotalFST.RData")
+#save.image(file="RAWOUT1KbtotalFST.RData")
 creep.all = creep.all[which(complete.cases(creep.all$num_snps)),]
 
 
@@ -227,7 +251,7 @@ for(i in chrom){
 
 regions = aggregate(GPOS~GRP+group2, data=hi.Fst, function(x) min(x))
 regions$end = aggregate(GPOS~GRP+group2, data=hi.Fst, function(x) max(x))$GPOS
-
+write.table(regions, file="regions")
 
 
 # Genes? ------------------------------------------------
@@ -366,7 +390,32 @@ sample estimates:
 
 
 
+# Fst in Selected in high regions ----------------------------------------
+fst$FSTSEL = as.numeric(fst$FSTSEL)
+FSTSEL  = fst$FSTSEL
+FSTSEL[FSTSEL < 0] = 0
+fst$FSTSEL = FSTSEL
 
+wilcox.test(fst$FSTSEL,  fst$FSTSEL[fst$FSTP<0.05])
+
+
+hi.Fst = c()
+chrom = intersect(regions$GRP, fst$GRP)
+for(i in chrom){
+	win.temp = regions[regions$GRP==i,]
+	deg.temp = fst[which(as.character(fst$GRP)==as.character(i)),]
+	blah=outer(as.numeric(deg.temp$POS), as.numeric(as.character(win.temp$GPOS)), ">=") 
+	blah1=outer(as.numeric(deg.temp$POS), as.numeric(as.character(win.temp$end)), "<=") 
+	blah=(which(blah1=="TRUE" & blah=="TRUE", arr.ind=T)) #The gene region will be the colum variable
+	temp = deg.temp[blah[,1],]
+	temp = cbind(temp, win.temp[blah[,2],])
+	hi.Fst = rbind(temp,hi.Fst)
+	print(i)
+}
+
+boxplot(-log10(hi.Fst$FSTSEL), -log10(fst$FSTSEL[!(fst$SNP %in% hi.Fst$SNP)]), notch=T)
+t.test(-log10(hi.Fst$FSTSEL), -log10(fst$FSTSEL[!(fst$SNP %in% hi.Fst$SNP)]))
+wilcox.test(-log10(hi.Fst$FSTSEL), -log10(fst$FSTSEL[!(fst$SNP %in% hi.Fst$SNP)]))
 
 
 
@@ -379,7 +428,7 @@ mtd$CHROM = paste("Group", mtd$CHROM, sep=""); mtd$SNP = paste(mtd$CHROM, mtd$BI
 ctd$CHROM = paste("Group", ctd$CHROM, sep=""); ctd$SNP = paste(ctd$CHROM, ctd$BIN_START,sep=":"); names(ctd)[4] = "TDC"
 #ctd = ctd[c(4,5)]
 #td = merge(mtd, ctd, by = "SNP"); 
-td = mtd
+td = ctd
 td = td[td$N_SNPS>1,]
 
 td.Fst = c()
@@ -776,9 +825,39 @@ gamma.res = test
 
 
 
+#Gamma vs immune 
+imm = read.table("/media/data1/forty3/brock/immune/EvansNewImm.txt", header =T)
+#imm.gen = imm[imm$Class %in% c("Recognition", "Signalling","Effector"),]
+
+test = gamm ; qwd = rep("N", nrow(test)); 
+qwd[test$GB %in%  high.genes] = "HYG" 
 
 
+qwd[test$GB %in%  imm$GB] = "IMM" 
+test$qwd = qwd
 
+boxplot(test$gamma~test$qwd)
+	#HYG is higher.....
+perm.test(test$gamma, length(high.genes), test$gamma[(test$qwd=="HYG")], 10000)		
+		# P (hyg gene Gamma) is 0.0000000295818, so it's significant. (with hyg genes)
+#So these genes are under selection voer long term.	And likely more genes under purifying selection in rest of genome
+				
+
+nrow(test[which(test$qwd=="HYG" & test$gamma>1),])/nrow(test[which(test$qwd=="HYG"),])
+	#18% of them under selection.
+
+gamma.res = test
+
+
+pairwise.wilcox.test(test$gamma,test$qwd)
+
+        Pairwise comparisons using Wilcoxon rank sum test
+
+data:  test$gamma and test$qwd
+
+#    HYG     IMM
+#IMM 0.09285 -
+#N   2.5e-06 0.00049
 
 
 
@@ -813,7 +892,7 @@ gamma.res = test
 
 vcftools --vcf HYG.vcf --keep /media/data1/forty3/drone/git/data/s.txt --TajimaD 1000 --maf 0.05  --out S
 
-Cpi = read.table(file="/media/data1/forty3/drone/vcf_drone/S.Tajima.D",header=T, colClasses = c("character", "numeric","numeric","numeric"))
+Cpi = read.table(file="/media/data1/forty3/drone/vcf_drone/C.Tajima.D",header=T, colClasses = c("character", "numeric","numeric","numeric"))
 Cpi$GRP = paste("Group", Cpi$CHROM, sep="")
 
 

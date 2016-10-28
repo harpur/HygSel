@@ -39,6 +39,11 @@ tabix -p vcf Drone.Hap.recode.vcf.gz
 HYG.vcf.gz</code></pre>
 
 
+####LAMP
+All of these analyses are in $LAMP.
+
+I used LAMP.sh and LAMPanalysis.r across phased chromosomes for both selected and control populations together. I extracted this (LAMPanalysis.r) to find evidence for differential admixture at hygienic loci. I did the same thing with ADMIXTURE and by using A, M, and C major alleles. 
+
 
 ##FST Analyses
 <!--- (cd /media/data1/forty3/drone/FST/pFST/vcflib/bin)-->

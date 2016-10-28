@@ -7,7 +7,7 @@
 
 #Environment variables -------------------------------
 export REF=/data2/reference
-
+export APIS=/home/amel45/AM45
 
 
 #Align ----------------------
@@ -82,15 +82,15 @@ gatk -R $REF/am45placed.fasta -T UnifiedGenotyper \
  
   
 #Call SNPs, assume diploid
-gatk -R $APIS/am45placed.fasta  -T UnifiedGenotyper \
+nohup gatk -R $APIS/am45new.fasta -T UnifiedGenotyper \
 	-I bams.list  \
 	-o out.het.raw.vcf  \
 	-stand_call_conf 60.0 \
 	-stand_emit_conf 40.0 \
 	-dcov 200 \
 	--min_base_quality_score 20  \
-	-nt 20 -glm SNP  \
-	-ploidy 2  
+	-nt 18 -glm SNP  \
+	-ploidy 2  &
  
  
 #Output hetero SNPs --------------------
@@ -105,3 +105,93 @@ sed '/^#/ !d' out.raw.vcf > VCFheader
 cat VCFheader cnv.vcf > cnv1.vcf
 rm cnv.vcf
 mv cnv1.vcf cnv.vcf
+
+
+
+
+# Filter Variants  -----------------------------------
+gatk -R $REF/am45placed.fasta -T VariantFiltration \
+	-V out.raw.vcf \
+	--filterExpression "QD < 5.0 || FS > 40.0 || MQ < 25.0 "   \
+	--filterName "mpileFilters" \
+	--mask out.raw.indels.vcf  \
+	--maskExtension 10 \
+	--maskName "InDel" -o  out.vcf 
+
+gatk -R $REF/am45placed.fasta -T VariantFiltration \
+	-V out.vcf \
+	--mask cnv.vcf \
+	--maskExtension 5 \
+	--maskName "cnv" \
+	-o  out2.vcf
+
+rm out.vcf 
+mv out2.vcf out.vcf 
+
+
+cat out.vcf | vcf-convert -v 4.1 > Ouput.vcf
+vcftools --vcf Ouput.vcf --recode --remove-filtered-all --max-alleles 2 --out out.indel #will be called out.indel.recode.vcf
+
+
+# Filter Depth and Quality outliers  -----------------------------------
+Rscript VCFQualityDepthFilter.r "out.indel.recode.vcf" 
+
+
+# Output Missingness  -----------------------------------
+vcftools --vcf out.indel.dp.q.recode.vcf --missing 
+
+
+
+
+R
+site.miss = read.table(file="out.lmiss",header=T, colClass=c("character", "numeric","numeric","numeric","numeric","numeric")) 
+ind.miss = read.table(file="out.imiss",header=T) #no individual had 5% missing loci. Good.
+write.table(site.miss[c(1,2)][which(site.miss$F_MISS>0.05),], file="missing.loci", col.names=F,row.names=F,quote=F)
+
+vcftools --vcf out.indel.dp.q.recode.vcf --exclude-positions missing.loci --recode --out out.indel.dp.q.miss
+	#1328938 total SNPs
+
+cp out.indel.dp.q.miss.recode.vcf /mnt/nfs/data1/apis/forty3/drone/vcf_drone/
+
+
+
+
+# Calling synonymous and non-synonymous sites -------------------------
+	#note, v4.0 of SNPEFF no longer supports TXT format (I think)...annoying.
+java -jar $SNPEFF/snpEff.jar Bimp \
+	-o txt \
+	out.indel.dp.q.recode.vcf \
+	-no-downstream \
+	-no-upstream > out.snpeff.eff
+	
+sed '/SYNONYMOUS/ !d' out.snpeff.eff > exons.eff #take only SNPS within exons from output file
+sed '/WARNING_/ !d' exons.eff > warnexons.eff #take out warnings from output file
+sed -i '/WARNING/ d' exons.eff 
+
+
+# make VCF file of only SYN and NSYN SNPs -------------------------
+cut -f 1,2 exons.eff  > synnsyn.list 
+vcftools --vcf out.indel.dp.q.recode.vcf --positions synnsyn.list --recode --out out.nsyn
+
+#create tabix index for merging ----------------------------------
+bgzip out.nsyn.recode.vcf
+tabix -p vcf out.nsyn.recode.vcf.gz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

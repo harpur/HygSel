@@ -14,18 +14,18 @@
 
 
 #Load Functions and Packages -------------------------------
-#load(file="Hygiene.RData")
-load(file="HYGRESULTS_FIGS.RDATA") #this is FSTP>3
+	#load(file="Hygiene.RData")
+	#load(file="HYGRESULTS_FIGS.RDATA") #this is FSTP>3
 library(ggplot2)
 library(ggthemes) #https://github.com/jrnold/ggthemes
 library(plyr)
 library(reshape2)
 library(RColorBrewer)
 library(wesanderson)
+library(grid)
+library(gridExtra)
 #http://www.ucl.ac.uk/~zctpep9/Archived%20webpages/Cookbook%20for%20R%20%C2%BB%20Colors%20(ggplot2).htm
 #http://www.stat.ubc.ca/~jenny/STAT545A/block14_colors.html
-
-
 
 
 #Plot Hygiene between selected and control populations ---------------
@@ -704,7 +704,140 @@ dev.off()
 
 
 
+# GWAS PLOT ---------------------------------
+	#this uses Association.RData and see CorrelationTest.r for data setup
+	
 
+SNPs = names(allele)[c(2:4)]
+names(allele)[c(2:4)] = c("SNP1", "SNP2", "SNP3")
+	
+means.sem1 = ddply(allele , c("SNP1"), summarise,
+mean=mean(V4,na.rm=T), 
+sem=sd(V4,na.rm=T)/sqrt(length(V4)))
+means.sem1 = transform(means.sem, lower=mean-sem, upper=mean+sem)
+
+means.sem2 = ddply(allele , c("SNP2"), summarise,
+mean=mean(V4,na.rm=T), 
+sem=sd(V4,na.rm=T)/sqrt(length(V4)))
+means.sem2 = transform(means.sem2, lower=mean-sem, upper=mean+sem)
+
+means.sem3 = ddply(allele , c("SNP3"), summarise,
+mean=mean(V4,na.rm=T), 
+sem=sd(V4,na.rm=T)/sqrt(length(V4)))
+means.sem3 = transform(means.sem3, lower=mean-sem, upper=mean+sem)
+
+
+
+
+
+p1<-ggplot(means.sem1, aes(x = factor(SNP1), y = mean,fill = factor(SNP1))) +  
+	geom_bar(stat="identity", width=0.5) + 
+	#coord_cartesian(ylim = c(0, .7)) + 
+	geom_errorbar(aes(ymin=mean-sem, ymax=mean+sem), position="dodge", width=.1, size = 1.1) 	+
+	scale_fill_manual(values=wes_palette(n=2, name="Chevalier")) +
+	theme_classic() + 
+	coord_cartesian(ylim=c(0,100)) +
+	theme(
+		axis.line.x = element_line(size=1.1),
+		axis.line.y = element_line(size=1.1),
+		strip.text.x = element_text(size = 14.5),
+		axis.title.y = element_text(size = 14.5),
+		axis.text.x=element_text(size=14),
+		axis.text=element_text(size=14),
+		legend.position="none"	
+		) +
+	labs(
+	x= "",
+	y = "Hygienic Performance(% Cells Removed)") +
+	scale_y_continuous(expand = c(0,0)) +
+	scale_x_discrete(expand = c(0.1,0))	+
+	geom_segment(aes(x = 1, y = 85, xend = 2, yend = 85), linetype=3) +
+	geom_segment(aes(x = 1, y = 85, xend = 1, yend = 84), linetype=3) +
+	geom_segment(aes(x = 2, y = 85, xend = 2, yend = 84), linetype=3) +
+	annotate("text", x = 1.5,  y = 86,label = "*" )
+
+p2<-ggplot(means.sem2, aes(x = factor(SNP2), y = mean,fill = factor(SNP2))) +  
+	geom_bar(stat="identity", width=0.5) + 
+	#coord_cartesian(ylim = c(0, .7)) + 
+	geom_errorbar(aes(ymin=mean-sem, ymax=mean+sem), position="dodge", width=.1, size = 1.1) 	+
+	scale_fill_manual(values=wes_palette(n=2, name="Chevalier")) +
+	theme_classic() + 
+	coord_cartesian(ylim=c(0,100)) +
+	theme(
+		axis.line.x = element_line(size=1.1),
+		axis.line.y = element_line(size=1.1),
+		strip.text.x = element_text(size = 14.5),
+		axis.title.y = element_text(size = 14.5),
+		axis.text.x=element_text(size=14),
+		axis.text=element_text(size=14),
+		legend.position="none"	
+		) +
+	labs(
+	x= "",
+	y = "Hygienic Performance(% Cells Removed)") +
+	scale_y_continuous(expand = c(0,0)) +
+	scale_x_discrete(expand = c(0.1,0))	+
+	geom_segment(aes(x = 1, y = 85, xend = 2, yend = 85), linetype=3) +
+	geom_segment(aes(x = 1, y = 85, xend = 1, yend = 84), linetype=3) +
+	geom_segment(aes(x = 2, y = 85, xend = 2, yend = 84), linetype=3) +
+	annotate("text", x = 1.5,  y = 86,label = "*" )
+
+p3<-ggplot(means.sem3, aes(x = factor(SNP3), y = mean,fill = factor(SNP3))) +  
+	geom_bar(stat="identity", width=0.5) + 
+	#coord_cartesian(ylim = c(0, .7)) + 
+	geom_errorbar(aes(ymin=mean-sem, ymax=mean+sem), position="dodge", width=.1, size = 1.1) 	+
+	scale_fill_manual(values=wes_palette(n=2, name="Chevalier")) +
+	theme_classic() + 
+	coord_cartesian(ylim=c(0,100)) +
+	theme(
+		axis.line.x = element_line(size=1.1),
+		axis.line.y = element_line(size=1.1),
+		strip.text.x = element_text(size = 14.5),
+		axis.title.y = element_text(size = 14.5),
+		axis.text.x=element_text(size=14),
+		axis.text=element_text(size=14),
+		legend.position="none"	
+		) +
+	labs(
+	x= "",
+	y = "Hygienic Performance(% Cells Removed)") +
+	scale_y_continuous(expand = c(0,0)) +
+	scale_x_discrete(expand = c(0.1,0))	+
+	geom_segment(aes(x = 1, y = 85, xend = 2, yend = 85), linetype=3) +
+	geom_segment(aes(x = 1, y = 85, xend = 1, yend = 84), linetype=3) +
+	geom_segment(aes(x = 2, y = 85, xend = 2, yend = 84), linetype=3) +
+	annotate("text", x = 1.5,  y = 86,label = "*" )
+
+	
+
+#grid.arrange(p1, p2, p3 ncol = 3)
+	
+
+pdf(file="snp1.pdf", width = 5, height =10)	
+p1
+dev.off()
+
+	
+pdf(file="snp2.pdf", width = 5, height =10)	
+p2
+dev.off()
+	
+pdf(file="snp3.pdf", width = 5, height =10)	
+p3
+dev.off()	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
 
 
