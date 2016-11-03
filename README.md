@@ -57,7 +57,7 @@ When calculating Fst, I used [pFst and wcFst](https://github.com/jewmanchue/vcfl
 These data are found in /working
 		
 	
-###Population identify 
+###Population identity 
 Here, I use the SNPs our group [previously identified](http://www.pnas.org/content/111/7/2614.abstract) in A, M, and C lineages and compare them to the selected populations to identify where the selected alleles originated from.
 
 1. Create tabix index for merging
@@ -73,8 +73,6 @@ HYG.vcf.gz</code></pre>
 
 
 ####LAMP
-All of these analyses are in $LAMP.
-
 I used LAMP.sh and LAMPanalysis.r across phased chromosomes for both selected and control populations together. I extracted this (LAMPanalysis.r) to find evidence for differential admixture at hygienic loci. I did the same thing with ADMIXTURE and by using A, M, and C major alleles. 
 
 These data are found in /vcf_drone/lamp
@@ -87,6 +85,39 @@ vcftools --vcf DroneSelection.vcf --remove controlBees.txt --freq --max-alleles 
 vcftools --vcf Drone.Hap.recode.vcf --hardy --remove controlBees.txt --out S
 </code></pre>
 
+
+##DEGs and QTLs
+There are lists of [DEGs](http://www.biomedcentral.com/1471-2164/16/500), [DEPs](http://www.biomedcentral.com/1471-2164/16/63), Some [GWAS](http://journals1.scholarsportal.info/pdf/1755098x/v12i0002/323_doa4sabihbmc.xml) and QTL papers ([1](http://onlinelibrary.wiley.com/doi/10.1111/j.1365-294X.2010.04569.x/full) and [2](http://link.springer.com/article/10.1007/s00114-002-0371-6#page-1)) available for hygienic behaviour. I pulled these data in to see if I've got evidence of significant FST SNPs within them. I would expect some within QTLs, but not necessarily any in DEGs. 
+
+#### QTLs and GWAS
+I used Oxley's QTLs and mapped their location in AMEL4.5 by BLAST'ing the location of the nearest SNP within said QTL's peak LOD score. These are the best matches I could find using Solignac's marker set (scaffold:pos format).
+
+|	Amel4	|	Start	|	End	|
+|	-------------	|	:-------------:	|	-------------:	|
+|	hyg1	|	2.19:1245006	|	2.19:86589	|
+|	hyg2	|	5.14:527544	|	5.14:1558442	|
+|	hyg3	|	16.2:42885	|	16.4:920721	|
+
+
+For the "GWAS" I pulled Spotter's putative, unpublished QTLs from Table 1:
+
+|	LG	|	Start	|	End	|
+|	---------	|	:---------:	|	---------	|
+|	LG1	|	3039231	|	8453574	|
+|	LG1	|	9418717	|	16819942	|
+|	LG2	|	1	|	12503099	|
+|	LG6	|	11206828	|	17739083	|
+|	LG7	|	9515998	|	12848973	|
+|	LG12	|	1	|	4003353	|
+|	LG13	|	5247545	|	10266737	|
+|	LG15	|	1	|	6643609	|
+|	LG16	|	3196393	|	6242592	|
+
+	
+
+#### DEGs and DEPs
+LF kindly provided significant DEPs. I pulled Boutin's Tables 4 and 5. 
+With these lists I looked for genes with significant FST SNPs (HYGFSTAnalyses.r and boutinDEGs.r). I permuted SNPs across the genome for signiciance. 
 
 
 
@@ -178,39 +209,6 @@ I characterized SNPs within high windows, high snps (FSTP >  4) relative to all 
 All is within DroneAnalysis.r
 All analyses saved in "Hygiene.RData"
 
-
-##DEGs and QTLs
-There are lists of [DEGs](http://www.biomedcentral.com/1471-2164/16/500), [DEPs](http://www.biomedcentral.com/1471-2164/16/63), Some [GWAS](http://journals1.scholarsportal.info/pdf/1755098x/v12i0002/323_doa4sabihbmc.xml) and QTL papers ([1](http://onlinelibrary.wiley.com/doi/10.1111/j.1365-294X.2010.04569.x/full) and [2](http://link.springer.com/article/10.1007/s00114-002-0371-6#page-1)) available for hygienic behaviour. I pulled these data in to see if I've got evidence of significant FST SNPs within them. I would expect some within QTLs, but not necessarily any in DEGs. 
-
-#### QTLs and GWAS
-I used Oxley's QTLs and mapped their location in AMEL4.5 by BLAST'ing the location of the nearest SNP within said QTL's peak LOD score. These are the best matches I could find using Solignac's marker set (scaffold:pos format).
-
-|	Amel4	|	Start	|	End	|
-|	-------------	|	:-------------:	|	-------------:	|
-|	hyg1	|	2.19:1245006	|	2.19:86589	|
-|	hyg2	|	5.14:527544	|	5.14:1558442	|
-|	hyg3	|	16.2:42885	|	16.4:920721	|
-
-
-For the "GWAS" I pulled Spotter's putative, unpublished QTLs from Table 1:
-
-|	LG	|	Start	|	End	|
-|	---------	|	:---------:	|	---------	|
-|	LG1	|	3039231	|	8453574	|
-|	LG1	|	9418717	|	16819942	|
-|	LG2	|	1	|	12503099	|
-|	LG6	|	11206828	|	17739083	|
-|	LG7	|	9515998	|	12848973	|
-|	LG12	|	1	|	4003353	|
-|	LG13	|	5247545	|	10266737	|
-|	LG15	|	1	|	6643609	|
-|	LG16	|	3196393	|	6242592	|
-
-	
-
-#### DEGs and DEPs
-LF kindly provided significant DEPs. I pulled Boutin's Tables 4 and 5. 
-With these lists I looked for genes with significant FST SNPs (HYGFSTAnalyses.r and boutinDEGs.r). I permuted SNPs across the genome for signiciance. 
 
 
 
