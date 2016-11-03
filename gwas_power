@@ -1,0 +1,455 @@
+###
+# GWAS power and RF
+###
+
+
+
+
+	#1) as the correlation between trait and genotype increases, th effect of differentiation following selection increases, fixing alleles in selected populations (N&P 1997). In the regions of the genome we've found acted on by selection, MAF drops significantly relative to the rest of the genome (test) not allowing us to fully identify candidate robustly associated in a GWAS within selected populations. However, we find that N regions are near to selected
+	#2) within the unselected population, we are able to detect very strong effects 
+
+#Gwas power? -----------------------------------
+
+pwr.anova.test(k=3, n=3, sig.level = 0.05, f = 0.1)
+pwr.anova.test(k=3, n=3, sig.level = 0.05, f = 0.2)
+pwr.anova.test(k=3, n=3, sig.level = 0.05, f = 0.3)
+pwr.anova.test(k=3, n=3, sig.level = 0.05, f = 0.4)
+ #power = 0.1235801
+pwr.anova.test(k=3, n=3, sig.level = 0.05, power = 0.8)
+#f = 1.357336 VERY large effect size.
+	
+pwr.r.test(n = 12 ,sig.level = 0.05, power = 0.8,alternative = "greater")	
+#r =  0.66
+
+#ok, focus on the biggest regions in control...what do I find? 
+
+
+
+
+
+
+
+vcftools --vcf candidates.recode.vcf --thin 200 --remove /media/data1/forty3/drone/vcf_drone/controlBees.txt --recode  --out Scandidates200
+vcftools --vcf candidates.recode.vcf  --thin 200 --recode  --out candidates200
+
+
+
+#out.ped contains these snps within high regions.
+
+
+# For high SNPs -------------------------
+library("FactoMineR")
+
+source("/media/data1/forty3/brock/scripts/VCFFunctions.r")
+source("/media/data1/forty3/drone/git/GenomeR/")
+
+
+pheno = read.table(file="/media/data1/forty3/drone/git/data/DroneSamps.txt")
+i = "candidates200.recode.vcf" 
+vcf = Read.VCF()	
+ #change later
+i = "Scandidates200.recode.vcf" 
+vcf.S = Read.VCF()	
+
+
+#Identify major allele in Selected pop ----------------------
+s.allele  = sapply(vcf.S,function(x)  substr(unlist(x)[10:38],1 ,3 )) 
+s.allele = s.allele[,-1]
+alt.freq = apply(s.allele, 2, function(x) (2*length(grep("1/1",x)) + length(grep("0/1",x)))/(2*length(x))) #freq of alt allele
+alt.freq[alt.freq>=0.5] = 1
+alt.freq[alt.freq<0.5] = 0 #now highlights the S major
+#alt.freq = paste(alt.freq, alt.freq, sep = "/")
+
+
+#Extract Alleles fro each Control Bee ---------------------
+	#this is, for now, hard-coded
+samps = unlist(vcf[1])[39:50]
+pos = sapply(vcf,function(x) return((x[2])))
+pos = pos[-1]
+chr = sapply(vcf,function(x) return((x[1])))[-1]
+snp = paste(chr, pos, sep="_")
+allele  = sapply(vcf,function(x)  substr(unlist(x)[39:50],1 ,3 )) 
+allele = allele[,-1]
+
+allele1 = substr(allele,1,1)
+allele2 = substr(allele,3,3)
+majeS  = matrix(alt.freq , nrow(allele), nc = ncol(allele), byrow = T)
+allele1 = allele1 == majeS
+allele2 = allele2 == majeS
+
+add.allele = allele1 + allele2 #table of additive alleleic effects
+dom.allele = add.allele
+dom.allele[dom.allele=="2"] = 1
+
+
+# Dominant Effect Analysis ---------------------------
+allele = data.frame(add.allele)
+names(allele) = paste("SNP", snp, sep="_")
+allele$V2 = samps
+allele = merge(allele, pheno, by = "V2")
+num = apply(allele, 2, function(x) length(unique(x)))
+allele = allele[,which(num>1)]
+
+
+#Rpart --------------
+library(randomForest)
+allele$V1 = NULL
+allele$V2 = NULL
+
+
+ps = c()
+cors = c()
+for(i in 1:(ncol(allele))){
+	#afit <- lm(allele$V4~as.factor(unlist(allele[i])))
+	ps=c(ps, cor.test((unlist(allele[i])), allele$V4, alternative = "greater")$p.value)
+	#cors=c(cors, cor.test((unlist(allele[i])), allele$V4)$estimate)
+	
+}
+
+ps[ncol(allele)] = 1
+allele2 = allele[,which(ps<0.05)]
+allele2$V4 = allele$V4
+
+		
+		
+fit <- randomForest(V4 ~ .,data=allele2, importance=TRUE, ntree=1000, do.trace = 100)
+varImpPlot(fit)
+
+
+x = data.frame(importance(fit))
+names.x  = row.names(x[which(x$X.IncMSE >= 2),])
+
+
+
+	# boxplot(allele2$V4~allele2$SNP_5.16_94800)
+
+
+allele2 = allele[,which(names(allele) %in% names.x)]
+allele2$V4 = allele$V4
+
+
+fit <- randomForest(V4 ~ .,data=allele2, importance=TRUE, ntree=1000)
+varImpPlot(fit)
+
+
+					
+#Are these SNPs proedictive across all samples?
+#this is, for now, hard-coded
+samps = unlist(vcf[1])[10:50]
+pos = sapply(vcf,function(x) return((x[2])))
+pos = pos[-1]
+chr = sapply(vcf,function(x) return((x[1])))[-1]
+snp = paste(chr, pos, sep="_")
+allele  = sapply(vcf,function(x)  substr(unlist(x)[10:50],1 ,3 )) 
+allele = allele[,-1]
+
+allele1 = substr(allele,1,1)
+allele2 = substr(allele,3,3)
+majeS  = matrix(alt.freq , nrow(allele), nc = ncol(allele), byrow = T)
+allele1 = allele1 == majeS
+allele2 = allele2 == majeS
+
+add.allele = allele1 + allele2 #table of additive alleleic effects
+dom.allele = add.allele
+dom.allele[dom.allele=="2"] = 1
+
+
+# Dominant Effect Analysis ---------------------------
+allele = data.frame(add.allele)
+names(allele) = paste("SNP", snp, sep="_")
+allele$V2 = samps
+allele = merge(allele, pheno, by = "V2")
+num = apply(allele, 2, function(x) length(unique(x)))
+allele = allele[,which(num>1)]
+
+
+allele.test = allele[,which(names(allele) %in% names.x)]
+allele.test$V4 = allele$V4
+
+#allele.test$V3 = allele$V3
+#allele.test = allele.test[which(allele.test$V3=="S"),]
+#allele.test$V3 = NULL
+
+fit <- randomForest(V4 ~ .,data=allele.test, importance=TRUE, ntree=1000)
+varImpPlot(fit)
+
+
+
+plot(predict(fit),allele.test$V4)
+ importance(fit)
+                     %IncMSE IncNodePurity
+SNP_10.22_33014   13.9196535      973.2482
+SNP_10.23_845175   1.9475250      639.2544
+SNP_10.27_146132   0.3065484      155.0380
+SNP_11.18_1313006 11.7810305      867.0696
+SNP_11.18_1328397  9.1818766      882.8140
+SNP_12.13_2735458 11.0341930      938.7291
+SNP_14.14_5302    -0.6365392      438.8133
+SNP_15.13_50067    2.2511264      507.8460
+SNP_2.11_1444349   5.6949899      459.7160
+SNP_5.14_15837     1.7764908      291.5671
+SNP_6.2_322325     0.9112061      351.3798
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+			#permutation 
+
+				for(i in 1:100){
+					allele2 = allele[-5713]
+					allele2 = allele2[,sample(c(1:ncol(allele2)), 500)]
+					allele2$V4 = allele$V4
+
+					fit <- randomForest(V4 ~ .,data=allele2, importance=TRUE, ntree=1000)
+
+
+					write.table(file="importance", data.frame(importance(fit)), quote=F, col.names=F, row.names=T,append=T)
+					print(i)
+				}
+
+			imps = read.table("importance",header=F)
+			len = aggregate(imps$V1, by = list(imps$V1), length)
+			imps = aggregate(imps$V2, by = list(imps$V1), mean)
+			imps$len = len$x
+			imps = imps[order(-imps$x),]
+
+
+			allele2 = allele[,which(names(allele) %in% imps$Group.1[c(1:150)])]
+			allele2$V4 = allele$V4
+
+
+
+
+
+######################################################
+
+ps = c()
+for(i in 1:(ncol(allele))){
+	#afit <- lm(allele$V4~as.factor(unlist(allele[i])))
+	ps=c(ps, summary(aov(allele$V4~as.factor(unlist(allele[i]))))[[1]][["Pr(>F)"]][[1]])
+	print(i)
+}
+
+ps[ncol(allele)] = 1
+
+
+ps = c()
+cors = c()
+for(i in 1:(ncol(allele))){
+	#afit <- lm(allele$V4~as.factor(unlist(allele[i])))
+	ps=c(ps, cor.test((unlist(allele[i])), allele$V4, alternative = "greater")$p.value)
+	#cors=c(cors, cor.test((unlist(allele[i])), allele$V4)$estimate)
+	
+}
+
+ps[ncol(allele)] = 1
+
+
+
+
+
+allele2 = allele[,which(ps<0.05)]
+allele2$V4 = allele$V4
+
+
+fit <- randomForest(V4 ~ .,data=allele2, importance=TRUE, ntree=1000)
+varImpPlot(fit)
+
+#plot(allele$SNP_8.14_84413, allele$V4)
+#boxplot(allele$V4~allele$SNP_15.13_50645)
+
+x 
+
+
+
+
+
+
+
+
+
+
+
+#permutation 
+
+for(i in 1:100){
+	allele2 = allele[-5713]
+	allele2 = allele2[,sample(c(1:ncol(allele2)), 500)]
+	allele2$V4 = allele$V4
+
+	fit <- randomForest(V4 ~ .,data=allele2, importance=TRUE, ntree=1000)
+
+
+	write.table(file="importance", data.frame(importance(fit)), quote=F, col.names=F, row.names=T,append=T)
+	print(i)
+}
+
+imps = read.table("importance",header=F)
+len = aggregate(imps$V1, by = list(imps$V1), length)
+imps = aggregate(imps$V2, by = list(imps$V1), mean)
+imps$len = len$x
+imps = imps[order(-imps$x),]
+
+
+allele2 = allele[,which(names(allele) %in% imps$Group.1[c(1:150)])]
+allele2$V4 = allele$V4
+
+fit <- randomForest(V4 ~ .,data=allele2, importance=TRUE, ntree=1000)
+varImpPlot(fit)
+###########
+
+
+
+
+
+
+
+
+#Extract Alleles fro each Control Bee ---------------------
+	#this is, for now, hard-coded
+samps = unlist(vcf[1])[1:38]
+pos = sapply(vcf,function(x) return((x[2])))
+pos = pos[-1]
+chr = sapply(vcf,function(x) return((x[1])))[-1]
+snp = paste(chr, pos, sep="_")
+allele  = sapply(vcf,function(x)  substr(unlist(x)[1:38],1 ,3 )) 
+allele = allele[,-1]
+
+allele1 = substr(allele,1,1)
+allele2 = substr(allele,3,3)
+majeS  = matrix(alt.freq , nrow(allele), nc = ncol(allele), byrow = T)
+allele1 = allele1 == majeS
+allele2 = allele2 == majeS
+
+add.allele = allele1 + allele2 #table of additive alleleic effects
+dom.allele = add.allele
+dom.allele[dom.allele=="2"] = 1
+
+
+# Dominant Effect Analysis ---------------------------
+allele = data.frame(add.allele)
+names(allele) = paste("SNP", snp, sep="_")
+allele$V2 = samps
+allele = merge(allele, pheno, by = "V2")
+num = apply(allele, 2, function(x) length(unique(x)))
+allele = allele[,which(num>1)]
+
+
+#Rpart --------------
+
+
+ps = c()
+for(i in 2:(ncol(allele)-1)){
+	#afit <- lm(allele$V4~as.factor(unlist(allele[i])))
+	ps=c(ps, summary(aov(allele$V4~as.factor(unlist(allele[i]))))[[1]][["Pr(>F)"]][[1]])
+}
+
+
+allele2 = allele[,which(ps<0.05)]
+allele2$V4 = allele$V4
+
+
+fit <- randomForest(V4 ~ .,data=allele2, importance=TRUE, ntree=1000)
+varImpPlot(fit)
+
+
+
+x = data.frame(importance(fit))
+names.x  = row.names(x[which(x$X.IncMSE >= 2),])
+
+
+
+
+allele2 = allele[,which(names(allele) %in% names.x)]
+allele2$V4 = allele$V4
+
+
+fit <- randomForest(V4 ~ .,data=allele2, importance=TRUE, ntree=1000)
+varImpPlot(fit)
+
+
+
+
+#how much VAR across all pops do these explain??? ------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

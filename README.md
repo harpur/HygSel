@@ -14,15 +14,48 @@ Most of this is still (guiltily) hard-coded, so I need to go through and general
 
 
 ##VCF Creation
-I aligned 2 different data sets. First, all Drones individually and second, I merged drones into a single bam file where each merged file contained the ~3 drones sequenced per queen. Each fastq was trimmed with Trimmomatic v0.32 e.g:
+I aligned 2 different data sets using NGM. First, all Drones individually and second, I merged drones into a single bam file where each merged file contained the ~3 drones sequenced per queen. Each fastq was trimmed with Trimmomatic v0.32 e.g:
 <pre><code>java -jar /usr/share/java/trimmomatic-0.32.jar PE -threads 30 -phred33 -trimlog 3870-3.trimlog 3870-3_R1.fastq 3870-3_R2.fastq 3870-3_R1_TP.fastq 3870-3_R1_TU.fastq 3870-3_R2_TP.fastq 3870-3_R2_TU.fastq LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36 </code></pre>
 I next followed [GATK's Best Practices for Alignment](https://www.broadinstitute.org/gatk/guide/bp_step.php)  and aligned with NGM (NGMDrone.sh), removed duplicate reads, and re-aligned around indels. 
 I hard-filtered sites within 10bp of indels and sites within 5bp of putative CNVs (sites that were called hetero in my haploid drones). This was performed in (trimdrone.sh). This script also trims QD < 5.0 || FS > 40.0 || MQ < 25.0 and removes SNPs with outlier Depth and Quality scores (VCFQualityDepthFilter.r)
+
+The resulting VCF file is Drone.Hap.recode.vcf and is found in /vcf_drone
 
 
 ##SNP Functional Classification
 I used SNPEFF to calssify mutations putative functional roles.
 <pre><code>java -jar /usr/local/lib/snpEff2/snpEff.jar Amel -o txt Drone.Hap.recode.vcf -no-downstream -no-upstream  > HYG.snpeff.eff</code></pre>
+<pre><code>java -jar /usr/local/lib/snpEff2/snpEff.jar Amel -o txt Drone.Hap.recode.vcf   > HYG-up_dwn.snpeff.eff</code></pre>
+
+I repeated this for my high candate sites
+<pre><code>java -jar /usr/local/lib/snpEff2/snpEff.jar Amel -o txt candidates.recode.vcf -no-downstream -no-upstream  > CAND.snpeff.eff</code></pre>
+<pre><code>java -jar /usr/local/lib/snpEff2/snpEff.jar Amel -o txt candidates.recode.vcf   > CAND-up_dwn.snpeff.eff</code></pre>
+	
+These data are found in /vcf_drone
+
+##FST and HapFLK
+For outlier analysis, I made use of the recent [hapflk software](https://forge-dga.jouy.inra.fr/projects/hapflk). This analysis was carried out using hapflk.sh, hapflksummary.r, and hapFLKPlot.r. Those scripts will run hapflk on a .vcf file, ouput phased .ped files and then run hapflk, summarizing the data in .RData files. I identified outliers as any site with Q > 0.01. 
+		
+When calculating Fst, I used [pFst and wcFst](https://github.com/jewmanchue/vcflib/wiki/Association-testing-with-GPAT) straight from final VCF files. 
+
+<pre><code>
+./pFst --target 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,17,18,19,20,21,22,23,24,25,26,27,28 \
+	   --background 30,31,32,33,34,35,36,37,38,39,40 \
+	   --deltaaf 0.05 \
+	   --file /media/data1/forty3/drone/vcf_drone/Drone.Hap.recode.vcf \
+	   --counts --type PL   > /media/data1/forty3/drone/FST/pFST/pFST.out
+</code></pre>
+
+<pre><code>
+./wcFst --target 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28 \
+	   --background 29,30,31,32,33,34,35,36,37,38,39,40 \
+	   --type PL \
+	   --file /media/data1/forty3/drone/vcf_drone/Drone.Hap.recode.vcf \
+	    >/media/data1/forty3/drone/FST/pFST/wcFST.out 
+</code></pre>
+
+These data are found in /working
+		
 	
 ###Population identify 
 Here, I use the SNPs our group [previously identified](http://www.pnas.org/content/111/7/2614.abstract) in A, M, and C lineages and compare them to the selected populations to identify where the selected alleles originated from.
@@ -44,9 +77,31 @@ All of these analyses are in $LAMP.
 
 I used LAMP.sh and LAMPanalysis.r across phased chromosomes for both selected and control populations together. I extracted this (LAMPanalysis.r) to find evidence for differential admixture at hygienic loci. I did the same thing with ADMIXTURE and by using A, M, and C major alleles. 
 
+These data are found in /vcf_drone/lamp
+
+
+####MAF and HWE
+To look at allele frequencies within selected regions of the genome. Followed this up with anal.r
+<pre><code>
+vcftools --vcf DroneSelection.vcf --remove controlBees.txt --freq --max-alleles 2 --out S
+vcftools --vcf Drone.Hap.recode.vcf --hardy --remove controlBees.txt --out S
+</code></pre>
+
+
+
+
+<!--- 
+
+
+
+
+
+
+
+
 
 ##FST Analyses
-<!--- (cd /media/data1/forty3/drone/FST/pFST/vcflib/bin)-->
+(cd /media/data1/forty3/drone/FST/pFST/vcflib/bin)
 Used [pFst and wcFst](https://github.com/jewmanchue/vcflib/wiki/Association-testing-with-GPAT) to estimate pairwise Fst and p-values between selected (pooled) and control:
 
 <pre><code>
@@ -107,15 +162,6 @@ vcftools --vcf /media/data1/forty3/brock/align/N.raw.vcf  --TajimaD 1000 --maf 0
 
 ###Output High FST regions and plots
 I munged the fst data using DroneAnalysis.r. This script takes in the outputs above, merges them, creates unique SNP IDs, and processed it into NCBI chromosomes. The latter is performed by a perl script developed by Amro Zayed and slightly modified by me (scaffold_to_chr.pl). Once prociessed into chromosomes, I run a creeping window average across the genome in 1 and 5 kb windows using the [Qanbari et al. 2012](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0049525) approach from my own [scripts](https://github.com/harpur/GenomeR). It outputs "ClusteredHighSNPsCreeper5kb", a list of high FST regions, and "RAWOUT.RData". 
-
-
-##Nucleotide Diversity and HWE
-I estimated nucleotide diversity with vcftoolsv0.1.11 
-<pre><code>
-vcftools --vcf Drone.Hap.recode.vcf --TajimaD 1000 --keep /media/data1/forty3/drone/git/data/FASBees.txt --out sel &
-
-vcftools --vcf Drone.Hap.recode.vcf --hardy --keep /media/data1/forty3/drone/git/data/FASBees.txt --out sel
-</code></pre>
 
 
 ##Extract high SNPs and characterize
@@ -225,6 +271,52 @@ To come
 
 
 ###Gene Age
+
+
+
+-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
