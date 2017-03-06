@@ -27,15 +27,12 @@ hapGWASsummary.r
 Haplotype_REANAL.sh
 LAMPanalysis.r
 LAMP_NA.sh
-LAMP.sh
 NAAdmixture.r
 NAAdmixture.sh
-NGMDRONE.sh
 plinkHaps.sh
 PlotGeneRegions_diploid.r
 PlotGeneRegions.r
 QTLplotter.r
-REHH.sh
 ScaffMaptoChr.r
 scaffold_to_chr.pl
 TDsummary.r
