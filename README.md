@@ -33,7 +33,14 @@ I repeated this for my high candate sites
 	
 These data are found in /vcf_drone
 
-##FST and HapFLK
+		
+# Drone Analysis Pipeline
+
+#Selection Analysis
+
+##Hapflk 
+I ran hapflk and summarized it using  hapflksummary.r. This script will concatenate all the hapflk outputs and also extract broad differentiated ranges (within 50Kb). The output is saved into "hapFLK50kb.RData"
+
 For outlier analysis, I made use of the recent [hapflk software](https://forge-dga.jouy.inra.fr/projects/hapflk). This analysis was carried out using hapflk.sh, hapflksummary.r, and hapFLKPlot.r. Those scripts will run hapflk on a .vcf file, ouput phased .ped files and then run hapflk, summarizing the data in .RData files. I identified outliers as any site with Q > 0.01. 
 		
 When calculating Fst, I used [pFst and wcFst](https://github.com/jewmanchue/vcflib/wiki/Association-testing-with-GPAT) straight from final VCF files. 
@@ -55,8 +62,24 @@ When calculating Fst, I used [pFst and wcFst](https://github.com/jewmanchue/vcfl
 </code></pre>
 
 These data are found in /working
-		
+
+
+##Tajima's D
+I ran this in 1000 bp windows using VCFTOOLS and only on the selected populations. The output is saved in S.Tajima.D. This is summarized with TDsummary.r and save in TD.RData. The script also performs a running median of 251 windows. 
+
+
+##iHs
+I calculated [iHS](http://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.0040072) statistic across each chromosome within the selected population. Each allele, after phasing, was deemed ancestral or derived based on it's frequency in the baseline population. The script is REHH.sh and will run across chromosomes and compile the results for iHS into a single outfile (iHS.out). I used the [REHH package in R](https://cran.r-project.org/web/packages/rehh/vignettes/rehh.pdf)
+
+
+##CSS
+The composite measure takes in all the selection measures I used and combines them in a non-parametric way. I've implement CSS as per the [original article](http://bmcgenet.biomedcentral.com/articles/10.1186/1471-2156-15-34) using css.r, kindly provided by the first author. 
+
 	
+##HWE
+Ran HWE test with vcftools, had to make some alterations.
+		
+		
 ###Population identity 
 Here, I use the SNPs our group [previously identified](http://www.pnas.org/content/111/7/2614.abstract) in A, M, and C lineages and compare them to the selected populations to identify where the selected alleles originated from.
 
@@ -97,7 +120,7 @@ I used Oxley's QTLs and mapped their location in AMEL4.5 by BLAST'ing the locati
 |	hyg1	|	2.19:1245006	|	2.19:86589	|
 |	hyg2	|	5.14:527544	|	5.14:1558442	|
 |	hyg3	|	16.2:42885	|	16.4:920721	|
-
+NOTE: This has been further refined and updated. See GenomeR/QTLs dataset.
 
 For the "GWAS" I pulled Spotter's putative, unpublished QTLs from Table 1:
 
@@ -114,7 +137,6 @@ For the "GWAS" I pulled Spotter's putative, unpublished QTLs from Table 1:
 |	LG16	|	3196393	|	6242592	|
 
 	
-
 #### DEGs and DEPs
 LF kindly provided significant DEPs. I pulled Boutin's Tables 4 and 5. 
 With these lists I looked for genes with significant FST SNPs (HYGFSTAnalyses.r and boutinDEGs.r). I permuted SNPs across the genome for signiciance. 
@@ -123,9 +145,8 @@ With these lists I looked for genes with significant FST SNPs (HYGFSTAnalyses.r 
 
 <!--- 
 
-
-
-
+vcftools --vcf Drone.Hap.recode.vcf --keep /media/data1/forty3/drone/git/data/FASBees.txt --window-pi 1000  --out FAS
+vcftools --vcf Drone.Hap.recode.vcf --remove allbutMAS.txt --TajimaD 1000  --out MAS
 
 
 
