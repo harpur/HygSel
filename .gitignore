@@ -6,7 +6,6 @@ CorrelationTest.r
 CSSanal.r
 CSS_hapflkplot.r
 CSS.r
-data
 DominantEffect.r
 DroneAnalysis.r
 DroneHapPlot.r
@@ -16,7 +15,6 @@ drone_re-GWAS.sh
 elai_chr.sh
 extractFST.r
 GenicDiff_elaiplot.r
-GenomeR
 GG_elaiplot.r
 GG_hapflkplot.r
 GWASCompilation.sh
