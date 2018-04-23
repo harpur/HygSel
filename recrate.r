@@ -26,9 +26,9 @@ chrom <- intersect(recom$chrom, associated.genes$chrom)
 for(i in chrom){
 	deg.temp <- associated.genes[associated.genes$chrom==i,]
 	win.temp <- recom[which(as.character(recom$chrom)==as.character(i)),]
-	blah=outer(as.numeric(deg.temp$start), as.numeric(as.character(win.temp$End)), "<=") 
-	blah1=outer(as.numeric(deg.temp$end), as.numeric(as.character(win.temp$Start)), ">=") 
-	blah=(which(blah1=="TRUE" & blah=="TRUE", arr.ind=T)) #The gene region will be the colum variable
+	blah <- outer(as.numeric(deg.temp$start), as.numeric(as.character(win.temp$End)), "<=") 
+	blah1 <- outer(as.numeric(deg.temp$end), as.numeric(as.character(win.temp$Start)), ">=") 
+	blah <- (which(blah1=="TRUE" & blah=="TRUE", arr.ind=T)) #The gene region will be the colum variable
 	temp <- deg.temp[blah[,1],]
 	temp <- cbind(temp, win.temp[blah[,2],])
 	rec.genes   <- rbind(temp,rec.genes )
