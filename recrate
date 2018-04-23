@@ -1,0 +1,42 @@
+
+
+
+
+test = gff[which(gff$GB %in% hi.genes$GB),]
+test = test[which(test$type=='gene'),]
+
+
+#recombination -----------------------
+recom = read.table("Chrom10kbrec.txt",header = T)
+recom$chrom = gsub("Group","", recom$Group)
+
+
+test = gff[which(gff$type == 'gene'),]
+test = test[-(grep("^17[.]",test$chrom)),]
+
+rec.genes = c()
+chrom = intersect(recom$chrom, test$chrom)
+for(i in chrom){
+	deg.temp = test[test$chrom==i,]
+	win.temp = recom[which(as.character(recom$chrom)==as.character(i)),]
+	blah=outer(as.numeric(deg.temp$start), as.numeric(as.character(win.temp$End)), "<=") 
+	blah1=outer(as.numeric(deg.temp$end), as.numeric(as.character(win.temp$Start)), ">=") 
+	blah=(which(blah1=="TRUE" & blah=="TRUE", arr.ind=T)) #The gene region will be the colum variable
+	temp = deg.temp[blah[,1],]
+	temp = cbind(temp, win.temp[blah[,2],])
+	rec.genes   = rbind(temp,rec.genes )
+	print(i)
+}
+
+
+rec.genes = rec.genes[which(rec.genes$Recrate>0),]
+
+x=aov(log10(rec.genes$Recrate)~rec.genes$test)
+summary(x)
+
+
+
+
+
+
+

@@ -8,12 +8,8 @@
 This project utilizes Illumina Sequence data from a selection experiment for hygienic behaviour. It selected bees for three generations using either a field assay for hygiene (called FAS population) or a metric of field assay and expression of marker proteins (called MAS population; see [Guarna et al. 2015](http://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-014-1193-6)). These populations were maintained along with a mase-line, unselected population (BM). Each bee's population-origin is listed in DroneSamps.txt
 
 
-To do:
-Most of this is still (guiltily) hard-coded, so I need to go through and generalize it. 
 
-
-
-##VCF Creation
+## VCF Creation
 I aligned 2 different data sets using NGM. First, all Drones individually and second, I merged drones into a single bam file where each merged file contained the ~3 drones sequenced per queen. Each fastq was trimmed with Trimmomatic v0.32 e.g:
 <pre><code>java -jar /usr/share/java/trimmomatic-0.32.jar PE -threads 30 -phred33 -trimlog 3870-3.trimlog 3870-3_R1.fastq 3870-3_R2.fastq 3870-3_R1_TP.fastq 3870-3_R1_TU.fastq 3870-3_R2_TP.fastq 3870-3_R2_TU.fastq LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36 </code></pre>
 I next followed [GATK's Best Practices for Alignment](https://www.broadinstitute.org/gatk/guide/bp_step.php)  and aligned with NGM (NGMDrone.sh), removed duplicate reads, and re-aligned around indels. 
@@ -22,7 +18,7 @@ I hard-filtered sites within 10bp of indels and sites within 5bp of putative CNV
 The resulting VCF file is Drone.Hap.recode.vcf and is found in /vcf_drone
 
 
-##SNP Functional Classification
+## SNP Functional Classification
 I used SNPEFF to calssify mutations putative functional roles.
 <pre><code>java -jar /usr/local/lib/snpEff2/snpEff.jar Amel -o txt Drone.Hap.recode.vcf -no-downstream -no-upstream  > HYG.snpeff.eff</code></pre>
 <pre><code>java -jar /usr/local/lib/snpEff2/snpEff.jar Amel -o txt Drone.Hap.recode.vcf   > HYG-up_dwn.snpeff.eff</code></pre>
@@ -36,9 +32,9 @@ These data are found in /vcf_drone
 		
 # Drone Analysis Pipeline
 
-#Selection Analysis
+# Selection Analysis
 
-##Hapflk 
+## Hapflk 
 I ran hapflk and summarized it using  hapflksummary.r. This script will concatenate all the hapflk outputs and also extract broad differentiated ranges (within 50Kb). The output is saved into "hapFLK50kb.RData"
 
 For outlier analysis, I made use of the recent [hapflk software](https://forge-dga.jouy.inra.fr/projects/hapflk). This analysis was carried out using hapflk.sh, hapflksummary.r, and hapFLKPlot.r. Those scripts will run hapflk on a .vcf file, ouput phased .ped files and then run hapflk, summarizing the data in .RData files. I identified outliers as any site with Q > 0.01. 
@@ -64,23 +60,23 @@ When calculating Fst, I used [pFst and wcFst](https://github.com/jewmanchue/vcfl
 These data are found in /working
 
 
-##Tajima's D
+## Tajima's D
 I ran this in 1000 bp windows using VCFTOOLS and only on the selected populations. The output is saved in S.Tajima.D. This is summarized with TDsummary.r and save in TD.RData. The script also performs a running median of 251 windows. 
 
 
-##iHs
+## iHs
 I calculated [iHS](http://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.0040072) statistic across each chromosome within the selected population. Each allele, after phasing, was deemed ancestral or derived based on it's frequency in the baseline population. The script is REHH.sh and will run across chromosomes and compile the results for iHS into a single outfile (iHS.out). I used the [REHH package in R](https://cran.r-project.org/web/packages/rehh/vignettes/rehh.pdf)
 
 
-##CSS
+## CSS
 The composite measure takes in all the selection measures I used and combines them in a non-parametric way. I've implement CSS as per the [original article](http://bmcgenet.biomedcentral.com/articles/10.1186/1471-2156-15-34) using css.r, kindly provided by the first author. 
 
 	
-##HWE
+## HWE
 Ran HWE test with vcftools, had to make some alterations.
 		
 		
-###Population identity 
+### Population identity 
 Here, I use the SNPs our group [previously identified](http://www.pnas.org/content/111/7/2614.abstract) in A, M, and C lineages and compare them to the selected populations to identify where the selected alleles originated from.
 
 1. Create tabix index for merging
@@ -95,13 +91,13 @@ tabix -p vcf Drone.Hap.recode.vcf.gz
 HYG.vcf.gz</code></pre>
 
 
-####LAMP
+#### LAMP
 I used LAMP.sh and LAMPanalysis.r across phased chromosomes for both selected and control populations together. I extracted this (LAMPanalysis.r) to find evidence for differential admixture at hygienic loci. I did the same thing with ADMIXTURE and by using A, M, and C major alleles. 
 
 These data are found in /vcf_drone/lamp
 
 
-####MAF and HWE
+#### MAF and HWE
 To look at allele frequencies within selected regions of the genome. Followed this up with anal.r
 <pre><code>
 vcftools --vcf DroneSelection.vcf --remove controlBees.txt --freq --max-alleles 2 --out S
@@ -109,7 +105,7 @@ vcftools --vcf Drone.Hap.recode.vcf --hardy --remove controlBees.txt --out S
 </code></pre>
 
 
-##DEGs and QTLs
+## DEGs and QTLs
 There are lists of [DEGs](http://www.biomedcentral.com/1471-2164/16/500), [DEPs](http://www.biomedcentral.com/1471-2164/16/63), Some [GWAS](http://journals1.scholarsportal.info/pdf/1755098x/v12i0002/323_doa4sabihbmc.xml) and QTL papers ([1](http://onlinelibrary.wiley.com/doi/10.1111/j.1365-294X.2010.04569.x/full) and [2](http://link.springer.com/article/10.1007/s00114-002-0371-6#page-1)) available for hygienic behaviour. I pulled these data in to see if I've got evidence of significant FST SNPs within them. I would expect some within QTLs, but not necessarily any in DEGs. 
 
 #### QTLs and GWAS
