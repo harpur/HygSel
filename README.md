@@ -22,11 +22,11 @@ The resulting VCF file is Drone.Hap.recode.vcf and is found in /vcf_drone
 ## SNP Functional Classification
 I used SNPEFF to calssify mutations putative functional roles.
 <pre><code>java -jar /usr/local/lib/snpEff2/snpEff.jar Amel -o txt Drone.Hap.recode.vcf -no-downstream -no-upstream  > HYG.snpeff.eff</code></pre>
+<!---
 <pre><code>java -jar /usr/local/lib/snpEff2/snpEff.jar Amel -o txt Drone.Hap.recode.vcf   > HYG-up_dwn.snpeff.eff</code></pre>
-
 I repeated this for my high candate sites
 <pre><code>java -jar /usr/local/lib/snpEff2/snpEff.jar Amel -o txt candidates.recode.vcf -no-downstream -no-upstream  > CAND.snpeff.eff</code></pre>
-
+-->
 <!---	
 These data are found in /vcf_drone
 -->
